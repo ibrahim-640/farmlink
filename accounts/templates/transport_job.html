@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="transport-jobs-container">
+    <h2 class="page-title">Available Transport Jobs</h2>
+
+    <!-- Urgency Filter -->
+    <div class="filter-section">
+        <label for="urgency_filter">Filter by Urgency:</label>
+        <select id="urgency_filter" name="urgency_filter" onchange="filterJobs()">
+            <option value="">All</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+        </select>
+    </div>
+
+    {% if jobs %}
+        <div class="jobs-list">
+            {% for job in jobs %}
+            <div class="job-card" data-urgency="{{ job.urgency|lower }}">
+                <div class="job-info">
+                    <p><strong>Order ID:</strong> {{ job.order.id }}</p>
+                    <p><strong>Pickup:</strong> {{ job.pickup_location }}</p>
+                    <p><strong>Delivery:</strong> {{ job.delivery_location }}</p>
+                    <p><strong>Status:</strong> {{ job.status }}</p>
+                    <p><strong>Urgency:</strong> {{ job.urgency|capfirst }}</p>
+                </div>
+                {% if job.status == 'Pending' %}
+                <form method="POST" action="{% url 'accept_job' job.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Accept Job</button>
+                </form>
+                {% else %}
+                    <span class="job-accepted">Accepted</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No transport jobs available at the moment.</p>
+    {% endif %}
+</div>
+
+<script>
+function filterJobs() {
+    const filterValue = document.getElementById('urgency_filter').value;
+    const jobs = document.querySelectorAll('.job-card');
+
+    jobs.forEach(job => {
+        if (filterValue === "" || job.dataset.urgency === filterValue) {
+            job.style.display = "block";
+        } else {
+            job.style.display = "none";
+        }
+    });
+}
+</script>
+{% endblock %}

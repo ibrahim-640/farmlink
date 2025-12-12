@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Transporter Dashboard</h2>
+    <p>Welcome, {{ user.username }}!</p>
+
+    <!-- Dashboard stats -->
+    <div class="row mt-4">
+        <!-- Earnings -->
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Earnings</h5>
+                    <p class="card-text">${{ earnings }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Jobs -->
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Active Jobs</h5>
+                    <p class="card-text">{{ active_jobs_count }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ratings -->
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Ratings</h5>
+                    <p class="card-text">{{ transporter_rating }} / 5 ⭐</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Jobs Preview -->
+    <div class="mt-4">
+        <h4>Available Jobs</h4>
+        <div class="list-group">
+            {% for job in available_jobs %}
+                <a href="/transport/jobs/{{ job.id }}/" class="list-group-item list-group-item-action">
+                    <strong>{{ job.title }}</strong> - {{ job.pickup_location }} to {{ job.dropoff_location }}
+                    <span class="badge bg-success float-end">${{ job.payment }}</span>
+                </a>
+            {% empty %}
+                <p class="text-muted">No available jobs at the moment.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Links -->
+    <ul class="mt-4">
+        <li><a href="/transport/jobs/">View All Available Jobs</a></li>
+        <li><a href="/transport/myjobs/">View My Completed Jobs</a></li>
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Checkout</h2>
+
+    {% if cart.items.exists %}
+    <form method="POST">
+        {% csrf_token %}
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart.items.all %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.product.price_per_unit }}</td>
+                    <td>{{ item.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d63826.538088484805!2d37.052253623079274!3d-1.0419261623109!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ske!4v1765391884867!5m2!1sen!2ske" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+        <!-- ADD PHONE NUMBER FIELD -->
+        <div class="mb-3">
+            <label for="phoneNumber" class="form-label">Enter M-Pesa Phone Number</label>
+            <input
+                type="tel"
+                class="form-control"
+                id="phoneNumber"
+                name="phoneNumber"
+                placeholder="07XXXXXXXX"
+                required>
+        </div>
+
+        <!-- ADD AMOUNT FIELD -->
+        <div class="mb-3">
+            <label for="amount" class="form-label">Total Amount</label>
+            <input
+                type="text"
+                class="form-control"
+                id="amount"
+                name="amount"
+                value="{{ cart.total_amount }}"
+                readonly>
+        </div>
+
+        <button type="submit" class="btn btn-success">Confirm & Pay with M-Pesa</button>
+    </form>
+
+    {% else %}
+    <p>Your cart is empty. <a href="{% url 'product_list' %}">Browse Products</a></p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section class="login-container">
+
+  <div class="login-box">
+    <h2>Login to Farmlink</h2>
+    <p class="login-subtitle">Select your role and enter your login details.</p>
+
+    <form method="post" class="login-form">
+        {% csrf_token %}
+
+        <!-- Role Selector -->
+        <label for="role">Select Role</label>
+        <select id="role" name="role" class="form-input" required>
+            <option value="">-- Choose Role --</option>
+            <option value="farmer">Farmer</option>
+            <option value="buyer">Buyer</option>
+            <option value="transporter">Transporter</option>
+        </select>
+
+        <!-- Username -->
+        <label for="username">Username</label>
+        <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-input"
+            placeholder="Enter your username"
+            required
+        >
+
+        <!-- Password -->
+        <label for="password">Password</label>
+        <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="Enter your password"
+            required
+        >
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn login-btn">Login</button>
+    </form>
+
+    <div class="login-links">
+      <p>Don't have an account? <a href="{% url 'register' %}">Create one</a></p>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

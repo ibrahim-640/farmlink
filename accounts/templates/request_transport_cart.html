@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="request-transport-container">
+    <h2 class="page-title">Request Transport for: {{ product.name }}</h2>
+
+    <div class="product-card">
+        <div class="product-image">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+                <img src="/static/images/default.png" alt="No image">
+            {% endif %}
+        </div>
+        <div class="product-info">
+            <p><strong>Category:</strong> {{ product.category }}</p>
+            <p><strong>Quantity:</strong> {{ product.quantity }} {{ product.unit }}</p>
+            <p><strong>Price per Unit:</strong> Ksh {{ product.price_per_unit }}</p>
+        </div>
+    </div>
+
+    <form method="POST" class="transport-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="pickup_location">Pickup Location</label>
+            <input type="text" name="pickup_location" id="pickup_location" placeholder="Enter pickup location" required>
+        </div>
+
+        <div class="form-group">
+            <label for="delivery_location">Delivery Location</label>
+            <input type="text" name="delivery_location" id="delivery_location" placeholder="Enter delivery location" required>
+        </div>
+
+        <div class="form-group">
+            <label for="product_type">Product Type</label>
+            <select name="product_type" id="product_type" required>
+                <option value="">Select product type</option>
+                <option value="perishable">Perishable</option>
+                <option value="non-perishable">Non-Perishable</option>
+                <option value="fragile">Fragile</option>
+                <option value="bulk">Bulk</option>
+            </select>
+        </div>
+
+        <!-- Add Urgency Selector -->
+        <div class="form-group">
+            <label for="urgency">Urgency</label>
+            <select name="urgency" id="urgency" required>
+                <option value="">Select urgency</option>
+                <option value="high">High</option>
+                <option value="medium" selected>Medium</option>
+                <option value="low">Low</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="pickup_date">Pickup Date</label>
+            <input type="date" name="pickup_date" id="pickup_date" required>
+        </div>
+
+        <div class="form-group">
+            <label for="pickup_time">Pickup Time</label>
+            <input type="time" name="pickup_time" id="pickup_time" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Request Transport</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container my-4">
+
+    <!-- Product Details Card -->
+    <div class="card mb-4">
+        <div class="row g-0">
+            <div class="col-md-4">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" class="img-fluid rounded-start" alt="{{ product.name }}">
+                {% else %}
+                    <img src="/static/images/default.png" class="img-fluid rounded-start" alt="No image">
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h2 class="card-title">{{ product.name }}</h2>
+                    <p class="card-text"><strong>Category:</strong> {{ product.category }}</p>
+                    <p class="card-text"><strong>Available Quantity:</strong> {{ product.quantity }} {{ product.unit }}</p>
+                    <p class="card-text"><strong>Price per Unit:</strong> Ksh {{ product.price_per_unit }}</p>
+                    <p class="card-text"><strong>Farmer:</strong> {{ product.farmer.username }}</p>
+                    <p class="card-text"><strong>Description:</strong> {{ product.description }}</p>
+
+                    <!-- Buy Form -->
+                    <form method="POST" class="mt-3">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Quantity to Buy</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity"
+                                   min="1" max="{{ product.quantity }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Buy Now</button>
+
+                        <!-- Only show Request Transport if order_id exists -->
+                        {% if order_id %}
+                            <a href="{% url 'request_transport' product.id order_id %}" class="btn btn-primary">
+                                Request Transport
+                            </a>
+                        {% endif %}
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

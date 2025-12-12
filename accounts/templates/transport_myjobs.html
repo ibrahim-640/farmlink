@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="my-jobs-container">
+    <h2 class="page-title">My Transport Jobs</h2>
+
+    {% if jobs %}
+        <div class="jobs-list">
+            {% for job in jobs %}
+            <div class="job-card">
+                <div class="job-header">
+                    <p><strong>Order ID:</strong> {{ job.order.id }}</p>
+                    <p><strong>Status:</strong> <span class="status {{ job.status|lower }}">{{ job.status }}</span></p>
+                </div>
+
+                <div class="job-body">
+                    <p><strong>Pickup:</strong> {{ job.pickup_location }}</p>
+                    <p><strong>Delivery:</strong> {{ job.delivery_location }}</p>
+                    <p><strong>Customer Contact:</strong> {{ job.customer.phone }}</p>
+                    <p><strong>Transport Fee:</strong>
+                        {% if job.transport_fee %}
+                            Ksh {{ job.transport_fee }}
+                        {% else %}
+                            Not set
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="job-actions">
+                    {% if job.status != "Delivered" %}
+                        <form method="POST" action="{% url 'update_job_status' job.id %}">
+                            {% csrf_token %}
+                            <select name="status" required>
+                                <option value="">Update Status</option>
+                                <option value="In Transit">In Transit</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">Update</button>
+                        </form>
+                    {% else %}
+                        <span class="job-completed">Completed</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Total Earnings -->
+        <div class="earnings-summary">
+            <p><strong>Total Earnings:</strong> Ksh {{ total_earnings }}</p>
+
+        </div>
+
+    {% else %}
+        <p>You have no assigned transport jobs.</p>
+    {% endif %}
+</div>
+{% endblock %}

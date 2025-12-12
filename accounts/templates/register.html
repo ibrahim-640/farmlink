@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section class="register-container">
+
+  <div class="register-box">
+      <h2>Create Your Farmlink Account</h2>
+      <p class="reg-subtitle">Choose your role to continue.</p>
+
+      <div class="role-grid">
+
+          <!-- Farmer Card -->
+          <a href="{% url 'register_farmer' %}" class="role-card">
+              <h3>Farmer</h3>
+              <p>Sell crops, manage inventory, and connect with buyers.</p>
+          </a>
+
+          <!-- Buyer Card -->
+          <a href="{% url 'register_buyer' %}" class="role-card">
+              <h3>Buyer</h3>
+              <p>Browse farm products and place orders quickly.</p>
+          </a>
+
+          <!-- Transporter Card -->
+          <a href="{% url 'register_transporter' %}" class="role-card">
+              <h3>Transporter</h3>
+              <p>Find delivery jobs and earn by transporting goods.</p>
+          </a>
+
+      </div>
+
+      <p class="login-redirect">Already have an account?
+         <a href="{% url 'login_view' %}">Login here</a>
+      </p>
+  </div>
+
+</section>
+
+{% endblock %}

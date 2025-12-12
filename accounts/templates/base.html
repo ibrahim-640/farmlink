@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmLink - {% block title %}Connecting Farmers, Buyers & Transporters{% endblock %}</title>
+
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg bg-light mb-3">
+        <div class="container">
+
+            <a href="{% url 'home' %}" class="navbar-brand">
+                <i class="fas fa-tractor"></i> FarmLink
+            </a>
+
+            <div class="navbar-nav ms-auto">
+
+                {% if user.is_authenticated %}
+
+                    <!-- Role-Based Dashboard -->
+                    {% if user.profile.is_farmer %}
+                        <a class="nav-link" href="{% url 'dashboard_farmer' %}">Farmer's Dashboard</a>
+                    {% elif user.profile.is_buyer %}
+                        <a class="nav-link" href="{% url 'dashboard_buyer' %}">Buyer's Dashboard</a>
+                    {% elif user.profile.is_transporter %}
+                        <a class="nav-link" href="{% url 'dashboard_transporter' %}">Transporter's Dashboard</a>
+                    {% endif %}
+                    <a class="nav-link" href="{% url 'product_list' %}">Marketplace</a>
+                    <a class="nav-link" href="{% url 'logout_view' %}">Logout</a>
+
+                {% else %}
+                    <a class="nav-link" href="{% url 'login_view' %}">Login</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-2">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-4 p-4 text-center">
+        <p>&copy; 2025 FarmLink. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

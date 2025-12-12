@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>My Orders</h1>
+
+{% if orders %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Status</th>
+            <th>Transport</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.product.name }}</td>
+            <td>{{ order.quantity }}</td>
+            <td>{{ order.status }}</td>
+
+            <td>
+                {% if order.transportrequest %}
+                    <span class="badge bg-info">Requested</span>
+                {% else %}
+                    <a href="{% url 'request_transport' order.product.id order.id %}" class="btn btn-primary btn-sm">Request Transport</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>You have no orders yet.</p>
+{% endif %}
+
+{% endblock %}

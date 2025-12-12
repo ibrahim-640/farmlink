@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Available Products</h2>
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">
+                        Category: {{ product.category }}<br>
+                        Price: {{ product.price_per_unit }} / {{ product.unit }}<br>
+                        Available: {{ product.quantity }} {{ product.unit }}
+                    </p>
+                </div>
+                <div class="card-footer d-flex justify-content-between flex-column">
+                    <div class="mb-2">
+                        <a href="{% url 'buy_product' product.id %}" class="btn btn-success btn-sm">Buy</a>
+                        <a href="{% url 'add_to_cart' product.id %}" class="btn btn-warning btn-sm">Add to Cart</a>
+                    </div>
+                    <div>
+                        <a href="{% url 'edit_product' product.id %}" class="btn btn-primary btn-sm">Edit</a>
+                        <a href="{% url 'delete_product' product.id %}" class="btn btn-danger btn-sm">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No products available.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

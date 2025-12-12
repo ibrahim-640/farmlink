@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section class="buyer-dashboard">
+
+    <!-- Welcome Header -->
+    <div class="dashboard-header">
+        <h2>Hello, {{ user.username }} 👋</h2>
+        <p>Here is your buying activity summary.</p>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <h3>Total Orders</h3>
+            <p>{{ total_orders }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Pending Deliveries</h3>
+            <p>{{ pending_deliveries }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Total Spent (Ksh)</h3>
+            <p>{{ total_spent }}</p>
+        </div>
+
+    </div>
+
+    <!-- Recent Orders Section -->
+    <section class="orders-section">
+        <h3>Recent Orders</h3>
+
+        <div class="orders-list">
+            {% for order in recent_orders %}
+                <div class="order-card">
+                    <h4>{{ order.product.name }}</h4>
+                    <p>Status: <strong>{{ order.status }}</strong></p>
+                    <p>Total: Ksh {{ order.total_price }}</p>
+                    <p>Date: {{ order.order_date|date:"M d, Y" }}</p>
+                </div>
+            {% empty %}
+                <p class="empty">No recent orders.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Active Delivery Tracker -->
+    <section class="delivery-tracker">
+        <h3>Active Delivery</h3>
+
+        {% if active_delivery %}
+            <div class="delivery-card">
+                <h4>Order #{{ active_delivery.order.id }}</h4>
+                <p>Product: {{ active_delivery.order.product.name }}</p>
+                <p>Transporter: {{ active_delivery.transporter.username }}</p>
+                <p>Status: <strong>{{ active_delivery.status }}</strong></p>
+            </div>
+        {% else %}
+            <p class="empty">No active deliveries at the moment.</p>
+        {% endif %}
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <a href="{% url 'product_list' %}" class="btn">Browse Products</a>
+            <a href="{% url 'order_list' %}" class="btn">View All Orders</a>
+            <a href="{% url 'transport_myjobs' %}" class="btn">Track Transport</a>
+        </div>
+    </section>
+
+</section>
+
+{% endblock %}

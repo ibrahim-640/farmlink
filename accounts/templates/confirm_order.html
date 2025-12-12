@@ -1,0 +1,35 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Confirm Order & Pay</h2>
+
+    {% if amount %}
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Phone Number Field -->
+        <div class="mb-3">
+            <label for="phoneNumber" class="form-label">Enter Phone Number</label>
+            <input type="tel" class="form-control" id="phoneNumber"
+                   name="phoneNumber" placeholder="07XXXXXXXX" required>
+            <div id="phoneHelp" class="form-text">
+                Enter a valid M-Pesa number, e.g., 0712345678
+            </div>
+        </div>
+
+        <!-- Amount Field (Read-only) -->
+        <div class="mb-3">
+            <label for="amount" class="form-label">Total Amount</label>
+            <input type="text" class="form-control" id="amount"
+                   name="amount" value="{{ amount }}" readonly>
+        </div>
+
+        <button type="submit" class="btn btn-success">Pay Now</button>
+    </form>
+    {% else %}
+        <p>Your cart is empty. <a href="{% url 'product_list' %}">Browse Products</a></p>
+    {% endif %}
+
+</div>
+{% endblock %}

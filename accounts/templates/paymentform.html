@@ -1,0 +1,22 @@
+{% extends 'main.html' %}
+
+{% block content %} 
+<form action="" method="POST">
+    {% csrf_token %} 
+
+    <!-- Phone Number -->
+    <div class="mb-3">
+        <label for="phoneNumber" class="form-label">Enter Phone Number</label>
+        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" aria-describedby="phoneHelp" placeholder="07XXXXXXXX" required>
+        <div id="phoneHelp" class="form-text">Place a valid M-Pesa number, e.g., 0712345678</div>
+    </div>
+
+    <!-- Amount (auto-filled from view) -->
+    <div class="mb-3">
+        <label for="amount" class="form-label">Amount / Bill</label>
+        <input type="text" class="form-control" id="amount" name="amount" value="{{ amount }}" readonly>
+    </div>
+
+    <button type="submit" class="btn btn-dark">Make Payment</button>
+</form>
+{% endblock %}

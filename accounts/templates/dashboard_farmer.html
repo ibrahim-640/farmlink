@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- ======================
+   DASHBOARD HERO BANNER
+========================-->
+<div class="dashboard-hero">
+    <h2>Welcome to Your Dashboard, {{ user.username }}!</h2>
+    <p>Manage your products, track orders, and grow your farm business.</p>
+</div>
+
+<section class="dashboard-container">
+
+    <!-- REVENUE + STATS -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <p class="stat-value">Ksh {{ total_revenue }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Total Orders</h3>
+            <p class="stat-value">{{ total_orders }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Products Listed</h3>
+            <p class="stat-value">{{ total_products }}</p>
+        </div>
+
+    </div>
+
+    <!-- LOW STOCK ALERTS -->
+    <div class="section-block">
+        <h3 class="section-title">Low Stock Alerts</h3>
+
+        {% if low_stock %}
+            <ul class="alert-list">
+                {% for product in low_stock %}
+                    <li class="alert-item">
+                        ⚠️ <strong>{{ product.name }}</strong> — Only {{ product.stock }} left!
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No low-stock items 🎉</p>
+        {% endif %}
+    </div>
+
+    <!-- INVENTORY MANAGEMENT -->
+    <div class="section-block">
+        <h3 class="section-title">My Inventory</h3>
+
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Stock</th>
+                    <th>Price (Ksh)</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.stock }}</td>
+                        <td>{{ product.price }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="empty-row">No products found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a class="btn add-btn" href="/products/add/">+ Add New Product</a><br>
+        <a href="/products/my/" class="btn view-all-btn" style="margin-bottom: 15px; display: inline-block;">
+            View My Products
+        </a>
+    </div>
+
+    <!-- ORDERS TABLE -->
+    <div class="section-block">
+        <h3 class="section-title">Recent Orders</h3>
+
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Buyer</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Total (Ksh)</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for order in recent_orders %}
+                    <tr>
+                        <td>{{ order.product.name }}</td>
+                        <td>{{ order.buyer.username }}</td>
+                        <td>{{ order.quantity }}</td>
+                        <td>{{ order.status }}</td>
+                        <td>{{ order.total_price }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="empty-row">No recent orders.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="/orders/" class="btn view-all-btn">View All Orders</a>
+    </div>
+
+</section>
+
+{% endblock %}

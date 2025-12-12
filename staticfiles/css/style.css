@@ -1,0 +1,240 @@
+/* ======================
+   GLOBAL STYLES
+========================*/
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+h1, h2, h3 {
+    font-weight: 600;
+}
+
+section {
+    padding: 60px 8%;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #2e7d32;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+    font-weight: 600;
+}
+
+.btn:hover {
+    background-color: #1b5e20;
+}
+
+/* ======================
+   HERO SECTION
+========================*/
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    background: #e9f5e9;
+    padding: 80px 8%;
+    border-radius: 0 0 20px 20px;
+}
+
+.hero-content h1 {
+    font-size: 38px;
+    color: #1b5e20;
+    line-height: 1.2;
+}
+
+.hero-content p {
+    font-size: 18px;
+    margin-top: 12px;
+    color: #444;
+}
+
+.hero-image img {
+    width: 430px;
+    height: auto;
+}
+
+/* ======================
+   STATS SECTION
+========================*/
+.stats {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.stat-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    width: 30%;
+    transition: transform 0.3s ease;
+}
+
+.stat-box:hover {
+    transform: translateY(-5px);
+}
+
+.stat-box h2 {
+    font-size: 32px;
+    color: #2e7d32;
+}
+
+/* ======================
+   FEATURES SECTION
+========================*/
+.features h2 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+.feature-item {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.feature-item h3 {
+    color: #1b5e20;
+    font-size: 22px;
+}
+
+/* ======================
+   HOW IT WORKS SECTION
+========================*/
+.how-it-works h2 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.steps {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.step {
+    width: 30%;
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.step span {
+    display: inline-block;
+    background: #2e7d32;
+    color: white;
+    font-size: 22px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    line-height: 45px;
+    margin-bottom: 10px;
+}
+
+/* ======================
+   USER TYPES SECTION
+========================*/
+.user-types h2 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.cards {
+    display: flex;
+    justify-content: space-between;
+    gap: 25px;
+}
+
+.card {
+    flex: 1;
+    background: #fff;
+    padding: 35px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+}
+
+.card h3 {
+    color: #2e7d32;
+    margin-bottom: 10px;
+}
+
+/* ======================
+   CTA SECTION
+========================*/
+.cta {
+    background: #2e7d32;
+    color: white;
+    text-align: center;
+    border-radius: 12px;
+}
+
+.cta h2 {
+    margin-bottom: 10px;
+}
+
+.cta p {
+    font-size: 18px;
+    margin: 0;
+}
+
+/* ======================
+   RESPONSIVE DESIGN
+========================*/
+@media (max-width: 1024px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .stats {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .stat-box {
+        width: 100%;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .steps {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .step {
+        width: 100%;
+    }
+
+    .cards {
+        flex-direction: column;
+    }
+}

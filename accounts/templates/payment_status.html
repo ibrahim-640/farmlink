@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Payment in Progress</h2>
+<p>A payment prompt has been sent to your phone. Please authorize the payment.</p>
+<p>Reference: {{ checkout_request_id }}</p>
+
+{% endblock %}
