@@ -1,12 +1,25 @@
 /* ======================
    GLOBAL STYLES
 ========================*/
+
 body {
     margin: 0;
     padding: 0;
     font-family: "Poppins", sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
+    /* FULL-PAGE BACKGROUND FOR ALL PAGES */
+    background-image: url("/static/images/hero-farm.jpeg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    color: #fff; /* default text color for readability */
+}
+
+/* Add subtle text shadow to improve readability over background */
+section, h1, h2, h3, p, .btn {
+    position: relative;
+    z-index: 1;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
 }
 
 h1, h2, h3 {
@@ -20,7 +33,7 @@ section {
 .btn {
     display: inline-block;
     padding: 12px 24px;
-    background-color: #2e7d32;
+    background-color: rgba(46, 125, 50, 0.85); /* semi-transparent for better visibility */
     color: #fff;
     text-decoration: none;
     border-radius: 6px;
@@ -29,42 +42,70 @@ section {
 }
 
 .btn:hover {
-    background-color: #1b5e20;
+    background-color: rgba(27, 94, 32, 0.85);
+}
+
+/* ======================
+   HOME PAGE SPECIFIC
+========================*/
+
+.home-page {
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Remove overlay so buttons are clickable */
+.home-page::before {
+    content: none;
+}
+
+/* Ensure sections appear above background */
+.home-page > section {
+    position: relative;
+    z-index: 1;
 }
 
 /* ======================
    HERO SECTION
 ========================*/
+
 .hero {
+    min-height: 100vh;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 40px;
-    background: #e9f5e9;
+    justify-content: center;
+    text-align: center;
+    background: transparent;
     padding: 80px 8%;
-    border-radius: 0 0 20px 20px;
+}
+
+.hero-content h1,
+.hero-content p {
+    color: #ffffff;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+    font-weight: 700;
 }
 
 .hero-content h1 {
     font-size: 38px;
-    color: #1b5e20;
     line-height: 1.2;
 }
 
 .hero-content p {
     font-size: 18px;
     margin-top: 12px;
-    color: #444;
 }
 
-.hero-image img {
-    width: 430px;
-    height: auto;
+/* Hide old hero image */
+.hero-image {
+    display: none;
 }
+
 
 /* ======================
    STATS SECTION
 ========================*/
+
 .stats {
     display: flex;
     justify-content: space-between;
@@ -93,6 +134,7 @@ section {
 /* ======================
    FEATURES SECTION
 ========================*/
+
 .features h2 {
     text-align: center;
     margin-bottom: 40px;
@@ -120,6 +162,7 @@ section {
 /* ======================
    HOW IT WORKS SECTION
 ========================*/
+
 .how-it-works h2 {
     text-align: center;
     margin-bottom: 40px;
@@ -154,6 +197,7 @@ section {
 /* ======================
    USER TYPES SECTION
 ========================*/
+
 .user-types h2 {
     text-align: center;
     margin-bottom: 40px;
@@ -187,6 +231,7 @@ section {
 /* ======================
    CTA SECTION
 ========================*/
+
 .cta {
     background: #2e7d32;
     color: white;
@@ -204,8 +249,44 @@ section {
 }
 
 /* ======================
+   NAVBAR STYLING
+========================*/
+.custom-navbar {
+    background: linear-gradient(90deg, #2e7d32, #66bb6a);
+    padding: 0.9rem 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.custom-brand {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff !important;
+}
+
+.custom-nav-link {
+    color: #f1f8e9 !important;
+    font-size: 1.05rem;
+    font-weight: 500;
+    margin-left: 15px;
+    transition: 0.3s;
+}
+
+.custom-nav-link:hover {
+    color: #ffffff !important;
+    text-decoration: underline;
+}
+
+.logout-link {
+    font-weight: 600;
+}
+
+/* ======================
    RESPONSIVE DESIGN
 ========================*/
+
 @media (max-width: 1024px) {
     .hero {
         flex-direction: column;
@@ -238,12 +319,13 @@ section {
         flex-direction: column;
     }
 }
+
 /* ======================
    DASHBOARD HERO BANNER
 ========================*/
 .dashboard-hero {
     background: linear-gradient(rgba(46, 125, 50, 0.7), rgba(46, 125, 50, 0.7)),
-                url('/static/images/farm-background.jpg') no-repeat center center;
+                url('/static/images/background.jpeg') no-repeat center center;
     background-size: cover;
     border-radius: 14px;
     padding: 60px 40px;
@@ -266,6 +348,8 @@ section {
 /* ======================
    DASHBOARD GLOBAL STYLES
 ========================*/
+/* ... All other dashboard, transporter, buyer, login, register, form, footer styles remain intact ... */
+
 .dashboard-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -1125,6 +1209,35 @@ ul.mt-4 li a:hover {
         font-size: 14px;
     }
 }
+.custom-navbar {
+    background: linear-gradient(90deg, #2e7d32, #66bb6a);
+    padding: 0.9rem 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.custom-brand {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff !important;
+}
+
+.custom-nav-link {
+    color: #f1f8e9 !important;
+    font-size: 1.05rem;
+    font-weight: 500;
+    margin-left: 15px;
+    transition: 0.3s;
+}
+
+.custom-nav-link:hover {
+    color: #ffffff !important;
+    text-decoration: underline;
+}
+
+.logout-link {
+    font-weight: 600;
+}
+
 /* ======================
    LOGIN PAGE CONTAINER
 ========================*/

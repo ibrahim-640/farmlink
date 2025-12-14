@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from decimal import Decimal
 
 
+
 # ---------------------------
 # USER PROFILE
 # ---------------------------
@@ -25,6 +26,14 @@ class Profile(models.Model):
     location = models.CharField(max_length=200, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
+    # ⭐ Transporter rating fields (NEW)
+    rating = models.DecimalField(
+        max_digits=2,
+        decimal_places=1,
+        default=0
+    )
+    rating_count = models.PositiveIntegerField(default=0)
+
     def __str__(self):
         return f"{self.user.username} ({self.role})"
 
@@ -37,6 +46,24 @@ class Profile(models.Model):
     def is_transporter(self):
         return self.role == self.ROLE_TRANSPORTER
 
+class TransporterRating(models.Model):
+    transporter = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="received_ratings"
+    )
+    buyer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="given_ratings"
+    )
+    job = models.OneToOneField('TransportJob', on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField()  # 1–5
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.transporter.username} rated {self.rating}"
 
 # ---------------------------
 # PRODUCT

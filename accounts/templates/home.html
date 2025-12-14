@@ -1,104 +1,109 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<!-- ================= HERO SECTION ================= -->
-<section id="hero" class="hero">
-  <div class="hero-content">
-    <h1>Connecting Farmers, Buyers & Transporters</h1>
-    <p>Farmlink streamlines agriculture trade—helping you buy, sell, and transport farm goods effortlessly.</p>
-  </div>
-  <div class="hero-image">
-    <img src="/static/images/hero-farm.png" alt="Farm Illustration">
-  </div>
-</section>
+<!-- PAGE WRAPPER -->
+<div class="home-page">
 
-<!-- ================= STATS SECTION ================= -->
-<section id="stats" class="stats">
-  <div class="stat-box">
-    <h2>4,000+</h2>
-    <p>Active Farmers</p>
-  </div>
-  <div class="stat-box">
-    <h2>12,500+</h2>
-    <p>Completed Orders</p>
-  </div>
-  <div class="stat-box">
-    <h2>2,000+</h2>
-    <p>Transporters Available</p>
-  </div>
-</section>
-<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d63826.538088484805!2d37.052253623079274!3d-1.0419261623109!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ske!4v1765392511433!5m2!1sen!2ske" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-<!-- ================= FEATURES SECTION ================= -->
-<section id="features" class="features">
-  <h2>Why Choose Farmlink?</h2>
-  <div class="feature-grid">
-    <div class="feature-item">
-      <h3>Real-Time Updates</h3>
-      <p>Get instant updates on fresh produce from verified farmers.</p>
+  <!-- ================= HERO SECTION ================= -->
+  <section id="hero" class="hero">
+    <div class="hero-content">
+      <h1>Connecting Farmers, Buyers & Transporters</h1>
+      <p>
+        Farmlink streamlines agriculture trade—helping you buy, sell,
+        and transport farm goods effortlessly.
+      </p>
     </div>
-    <div class="feature-item">
-      <h3>Secure Transactions</h3>
-      <p>Safe payments and verified users for trustworthy trading.</p>
-    </div>
-    <div class="feature-item">
-      <h3>Fast Delivery</h3>
-      <p>Transporters respond quickly to ensure smooth logistics.</p>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- ================= HOW IT WORKS ================= -->
-<section id="how-it-works" class="how-it-works">
-  <h2>How It Works</h2>
-  <div class="steps">
-    <div class="step">
-      <span>1</span>
-      <h3>Create an Account</h3>
-      <p>Sign up as a Farmer, Buyer, or Transporter.</p>
+  <!-- ================= STATS SECTION ================= -->
+  <section id="stats" class="stats">
+    <div class="stat-box">
+      <h2>4,000+</h2>
+      <p>Active Farmers</p>
     </div>
-    <div class="step">
-      <span>2</span>
-      <h3>Start Selling or Buying</h3>
-      <p>Farmers upload products, buyers place orders easily.</p>
+    <div class="stat-box">
+      <h2>12,500+</h2>
+      <p>Completed Orders</p>
     </div>
-    <div class="step">
-      <span>3</span>
-      <h3>Transport with Ease</h3>
-      <p>Transporters pick up delivery requests and earn money.</p>
+    <div class="stat-box">
+      <h2>2,000+</h2>
+      <p>Transporters Available</p>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ================= USER TYPES ================= -->
-<section id="user-types" class="user-types">
-  <h2>Choose Your Role</h2>
-  <div class="cards">
-
-    <div class="card">
-      <h3>Farmer</h3>
-      <p>Sell produce directly to buyers and grow your agribusiness.</p>
-      <a href="{% url 'register_farmer' %}" class="btn">Join as Farmer</a>
+  <!-- ================= FEATURES SECTION ================= -->
+  <section id="features" class="features">
+    <h2>Why Choose Farmlink?</h2>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <h3>Real-Time Updates</h3>
+        <p>Get instant updates on fresh produce from verified farmers.</p>
+      </div>
+      <div class="feature-item">
+        <h3>Secure Transactions</h3>
+        <p>Safe payments and verified users for trustworthy trading.</p>
+      </div>
+      <div class="feature-item">
+        <h3>Fast Delivery</h3>
+        <p>Transporters respond quickly to ensure smooth logistics.</p>
+      </div>
     </div>
+  </section>
 
-    <div class="card">
-      <h3>Buyer</h3>
-      <p>Order fresh produce at fair prices from trusted sources.</p>
-      <a href="{% url 'register_buyer' %}" class="btn">Join as Buyer</a>
+  <!-- ================= HOW IT WORKS ================= -->
+  <section id="how-it-works" class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <span>1</span>
+        <h3>Create an Account</h3>
+        <p>Sign up as a Farmer, Buyer, or Transporter.</p>
+      </div>
+      <div class="step">
+        <span>2</span>
+        <h3>Start Selling or Buying</h3>
+        <p>Farmers upload products, buyers place orders easily.</p>
+      </div>
+      <div class="step">
+        <span>3</span>
+        <h3>Transport with Ease</h3>
+        <p>Transporters pick up delivery requests and earn money.</p>
+      </div>
     </div>
+  </section>
 
-    <div class="card">
-      <h3>Transporter</h3>
-      <p>Get delivery jobs and earn income moving farm goods.</p>
-      <a href="{% url 'register_transporter' %}" class="btn">Join as Transporter</a>
+  <!-- ================= USER TYPES ================= -->
+  <section id="user-types" class="user-types">
+    <h2>Choose Your Role</h2>
+    <div class="cards">
+
+      <div class="card">
+        <h3>Farmer</h3>
+        <p>Sell produce directly to buyers and grow your agribusiness.</p>
+        <a href="{% url 'register_farmer' %}" class="btn">Join as Farmer</a>
+      </div>
+
+      <div class="card">
+        <h3>Buyer</h3>
+        <p>Order fresh produce at fair prices from trusted sources.</p>
+        <a href="{% url 'register_buyer' %}" class="btn">Join as Buyer</a>
+      </div>
+
+      <div class="card">
+        <h3>Transporter</h3>
+        <p>Get delivery jobs and earn income moving farm goods.</p>
+        <a href="{% url 'register_transporter' %}" class="btn">Join as Transporter</a>
+      </div>
+
     </div>
+  </section>
 
-  </div>
-</section>
+  <!-- ================= CALL TO ACTION ================= -->
+  <section id="cta" class="cta">
+    <h2>Ready to Grow With Farmlink?</h2>
+    <p>Join thousands improving agriculture trade across the region.</p>
+  </section>
 
-<!-- ================= CALL TO ACTION ================= -->
-<section id="cta" class="cta">
-  <h2>Ready to Grow With Farmlink?</h2>
-  <p>Join thousands improving agriculture trade across the region.</p>
-</section>
+</div>
 
 {% endblock %}

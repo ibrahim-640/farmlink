@@ -5,10 +5,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from .forms import TransporterRatingForm
+from django.db.models import Sum,Avg
 from .mpesa import lipa_na_mpesa
 from decimal import Decimal
-
-from .models import Product, Profile, Order, TransportRequest, TransportJob, Cart, CartItem
+from .models import Product, Profile, Order, TransportRequest, TransportJob,TransporterRating, Cart, CartItem
 from .forms import (
     LoginForm,
     FarmerRegistrationForm,
@@ -125,15 +126,120 @@ def dashboard_buyer(request):
     if not request.user.profile.is_buyer():
         messages.error(request, "Access denied.")
         return redirect("home")
-    return render(request, "dashboard_buyer.html")
 
+    my_orders = Order.objects.filter(buyer=request.user)
+
+    total_orders = my_orders.count()
+    pending_deliveries = my_orders.filter(status__in=['pending', 'confirmed', 'in_transit']).count()
+    total_spent = my_orders.aggregate(total=Sum('total_price'))['total'] or 0
+    recent_orders = my_orders.order_by('-order_date')[:5]
+
+    # Active delivery (first in-transit order)
+    active_delivery = TransportJob.objects.filter(
+        order__buyer=request.user,
+        status='In Transit'
+    ).first()
+
+    context = {
+        'total_orders': total_orders,
+        'pending_deliveries': pending_deliveries,
+        'total_spent': total_spent,
+        'recent_orders': recent_orders,
+        'active_delivery': active_delivery
+    }
+
+    return render(request, "dashboard_buyer.html", context)
 
 @login_required
 def dashboard_transporter(request):
     if not request.user.profile.is_transporter():
         messages.error(request, "Access denied.")
         return redirect("home")
-    return render(request, "dashboard_transporter.html")
+
+    # Earnings: sum of transport fees for delivered jobs
+    earnings = TransportJob.objects.filter(
+        driver=request.user,
+        status='Delivered'
+    ).aggregate(total=Sum('transport_fee'))['total'] or 0
+
+    # Active jobs (in transit)
+    active_jobs_count = TransportJob.objects.filter(
+        driver=request.user,
+        status__in=['Pending', 'In Transit']
+    ).count()
+
+    # Transporter rating
+    transporter_rating = request.user.profile.rating if hasattr(request.user.profile, 'rating') else 0
+
+    # Available jobs (Pending, not assigned yet)
+    available_jobs = TransportJob.objects.filter(status='Pending')
+
+    # In-progress jobs (for marking delivery)
+    in_progress_jobs = TransportJob.objects.filter(driver=request.user, status='In Transit')
+
+    context = {
+        'earnings': earnings,
+        'active_jobs_count': active_jobs_count,
+        'transporter_rating': transporter_rating,
+        'available_jobs': available_jobs,
+        'in_progress_jobs': in_progress_jobs,
+    }
+    return render(request, "dashboard_transporter.html", context)
+@login_required
+def mark_delivered(request, job_id):
+    job = get_object_or_404(TransportJob, id=job_id, driver=request.user)
+    if request.method == "POST":
+        job.status = "Delivered"
+        job.save()
+        messages.success(request, f"Job #{job.id} marked as delivered.")
+    return redirect("dashboard_transporter")
+
+@login_required
+def rate_transporter(request, job_id):
+    job = get_object_or_404(
+        TransportJob,
+        id=job_id,
+        status='Delivered'
+    )
+
+    # Only buyer can rate
+    if request.user != job.order.buyer:
+        messages.error(request, "Access denied.")
+        return redirect("home")
+
+    # Prevent duplicate rating
+    if TransporterRating.objects.filter(job=job).exists():
+        messages.warning(request, "You already rated this transporter.")
+        return redirect("buyer_dashboard")
+
+    if request.method == "POST":
+        form = TransporterRatingForm(request.POST)
+        if form.is_valid():
+            rating_obj = form.save(commit=False)
+            rating_obj.transporter = job.driver
+            rating_obj.buyer = request.user
+            rating_obj.job = job
+            rating_obj.save()
+
+            # Update transporter profile rating
+            profile = job.driver.profile
+            avg_rating = TransporterRating.objects.filter(
+                transporter=job.driver
+            ).aggregate(avg=Avg('rating'))['avg']
+
+            profile.rating = round(avg_rating, 1)
+            profile.rating_count += 1
+            profile.save()
+
+            messages.success(request, "Thank you for rating!")
+            return redirect("buyer_dashboard")
+    else:
+        form = TransporterRatingForm()
+
+    return render(request, "rate_transporter.html", {
+        "form": form,
+        "job": job
+    })
 
 
 # ---------------------------
@@ -219,11 +325,12 @@ def transport_jobs(request):
     return render(request, 'transport_job.html', {'jobs': jobs})
 
 
+@login_required
 def transport_myjobs(request):
-    jobs = TransportJob.objects.filter(driver=request.user)
-    total_earnings = sum([job.transport_fee or 0 for job in jobs])
+    completed_jobs = TransportJob.objects.filter(driver=request.user, status='Delivered')
+    total_earnings = sum([job.transport_fee or 0 for job in completed_jobs])
     return render(request, 'transport_myjobs.html', {
-        'jobs': jobs,
+        'jobs': completed_jobs,
         'total_earnings': total_earnings,
     })
 
@@ -247,7 +354,7 @@ def accept_job(request, job_id):
         messages.success(request, "Job accepted successfully!")
         return redirect('transport_job')
 
-    return redirect('transport_job')
+    return redirect('transport_jobs')
 
 
 @login_required

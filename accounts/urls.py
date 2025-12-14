@@ -25,6 +25,8 @@ urlpatterns = [
     path('transport/myjobs/', views.transport_myjobs, name='transport_myjobs'),
     path('transport/accept-job/<int:job_id>/', views.accept_job, name='accept_job'),
     path('transport/request/<int:product_id>/<int:order_id>/',views.request_transport,name='request_transport'),
+    path('rate-transporter/<int:job_id>/',views.rate_transporter,name='rate_transporter'),
+    path('transport/mark-delivered/<int:job_id>/', views.mark_delivered, name='mark_delivered'),
 
 
     # Products
