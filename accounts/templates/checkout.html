@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-
 {% block content %}
+
 <div class="container mt-4">
     <h2>Checkout</h2>
 
@@ -8,30 +8,45 @@
     <form method="POST">
         {% csrf_token %}
 
-        <table class="table table-bordered">
+        <!-- ORDER SUMMARY -->
+        <table class="table table-bordered align-middle">
             <thead>
                 <tr>
                     <th>Product</th>
-                    <th>Quantity</th>
+                    <th style="width:120px;">Quantity</th>
                     <th>Unit Price</th>
                     <th>Subtotal</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for item in cart.items.all %}
                 <tr>
                     <td>{{ item.product.name }}</td>
                     <td>{{ item.quantity }}</td>
-                    <td>{{ item.product.price_per_unit }}</td>
-                    <td>{{ item.subtotal|floatformat:2 }}</td>
+                    <td>KES {{ item.product.price_per_unit }}</td>
+                    <td>KES {{ item.subtotal }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <!-- ADD PHONE NUMBER FIELD -->
+        <!-- PAYMENT SUMMARY -->
+        <div class="card p-3 mb-3">
+            <h5>Payment Summary</h5>
+            <hr>
+            <p>Subtotal: <strong>KES {{ cart.subtotal }}</strong></p>
+            <p>Tax (16%): <strong>KES {{ cart.subtotal|floatformat:2 }}</strong></p>
+            <p>Delivery Fee: <strong>KES 10</strong></p>
+            <hr>
+            <h5>Total Amount: <strong>KES {{ cart.total }}</strong></h5>
+        </div>
+
+        <!-- PHONE NUMBER -->
         <div class="mb-3">
-            <label for="phoneNumber" class="form-label">Enter M-Pesa Phone Number</label>
+            <label for="phoneNumber" class="form-label">
+                Enter M-Pesa Phone Number
+            </label>
             <input
                 type="tel"
                 class="form-control"
@@ -41,23 +56,17 @@
                 required>
         </div>
 
-        <!-- ADD AMOUNT FIELD -->
-        <div class="mb-3">
-            <label for="amount" class="form-label">Total Amount</label>
-            <input
-                type="text"
-                class="form-control"
-                id="amount"
-                name="amount"
-                value="{{ cart.total_amount }}"
-                readonly>
-        </div>
-
-        <button type="submit" class="btn btn-success">Confirm & Pay with M-Pesa</button>
+        <!-- NO AMOUNT INPUT (SECURITY) -->
+        <button type="submit" class="btn btn-success w-100">
+            Confirm & Pay with M-Pesa
+        </button>
     </form>
 
     {% else %}
-    <p>Your cart is empty. <a href="{% url 'product_list' %}">Browse Products</a></p>
+        <p>Your cart is empty.
+            <a href="{% url 'product_list' %}">Browse Products</a>
+        </p>
     {% endif %}
 </div>
+
 {% endblock %}

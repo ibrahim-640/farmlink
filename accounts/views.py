@@ -440,15 +440,27 @@ def request_transport(request, order_id, product_id):
 def cart_view(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
 
-    # Group items by farmer
-    grouped_items = defaultdict(list)
-    for item in cart.items.all():
-        grouped_items[item.product.farmer].append(item)
+    items = cart.items.filter(saved_for_later=False)
+
+    grouped_items = {}
+    subtotal = 0
+
+    for item in items:
+        farmer = item.product.farmer
+        grouped_items.setdefault(farmer, []).append(item)
+        subtotal += item.subtotal
+
+    delivery_fee = 200
+    total = subtotal + delivery_fee
 
     return render(request, 'cart.html', {
-        'cart': cart,
-        'grouped_items': grouped_items
+        'grouped_items': grouped_items,
+        'subtotal': subtotal,
+        'delivery_fee': delivery_fee,
+        'total': total,
+        'cart': cart
     })
+
 
 
 @login_required
@@ -546,7 +558,6 @@ def confirm_order(request):
 
     return render(request, "confirm_order.html", {"amount": amount})
 
-
 @login_required
 def checkout(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -555,55 +566,51 @@ def checkout(request):
         messages.warning(request, "Your cart is empty.")
         return redirect('product_list')
 
-    total_amount = sum(item.subtotal for item in cart.items.all())
+    # ✅ ALWAYS compute total from Cart model
+    total_amount = cart.total()   # Decimal
 
     if request.method == "POST":
-        phone = request.POST.get("phoneNumber")  # match your form input name
+        phone = request.POST.get("phoneNumber")
+
         if not phone:
             messages.error(request, "Please enter a phone number.")
             return redirect('checkout')
 
-        # Convert phone to international format for M-Pesa
+        # Normalize phone number
         phone = phone.strip()
         if phone.startswith("0"):
             phone = "254" + phone[1:]
         elif phone.startswith("+"):
-            phone = phone[1:]  # remove + sign
-        # else assume already in 254XXXXXXXXX format
+            phone = phone[1:]
 
-        # Convert total_amount to int (M-Pesa does not accept decimals)
+        # ✅ M-Pesa requires an INTEGER
         amount = int(total_amount)
 
-        account_ref = f"Cart{cart.id}"
+        # DEBUG (temporarily)
+        print("CHECKOUT AMOUNT:", amount)
 
         response = lipa_na_mpesa(
             phone_number=phone,
             amount=amount,
-            account_reference=account_ref,
-            transaction_desc="Order Payment"
+            account_reference=f"Cart-{cart.id}",
+            transaction_desc="FarmLink Order Payment"
         )
 
-        # Capture exact error if any
-        if not response or "errorMessage" in response:
-            error_msg = response.get("errorMessage", "Unknown error occurred")
-            messages.error(request, f"M-Pesa error: {error_msg}")
+        if not response or response.get("ResponseCode") != "0":
+            messages.error(request, "Payment initiation failed.")
             print("M-Pesa response:", response)
             return redirect('checkout')
 
-        checkout_request_id = response.get('CheckoutRequestID')
-        if not checkout_request_id:
-            messages.error(request, "Failed to initiate M-Pesa payment. Try again later.")
-            print("M-Pesa response:", response)
-            return redirect('checkout')
-
-        # Store session for callback
-        request.session['checkout_request_id'] = checkout_request_id
+        request.session['checkout_request_id'] = response.get("CheckoutRequestID")
         request.session['cart_id'] = cart.id
 
-        messages.info(request, "A payment prompt has been sent to your phone. Complete payment to confirm order.")
+        messages.success(request, "Payment prompt sent. Check your phone.")
         return redirect('payment_status')
 
-    return render(request, 'checkout.html', {'cart': cart, 'total_amount': total_amount})
+    return render(request, 'checkout.html', {
+        'cart': cart,
+        'total_amount': total_amount
+    })
 
 @login_required
 def request_transport_for_cart(request):
@@ -669,4 +676,3 @@ def mpesa_callback(request):
         print("MPESA callback error:", str(e))
 
     return HttpResponse("Received")
-

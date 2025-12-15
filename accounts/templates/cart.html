@@ -1,45 +1,52 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% load cart_extras %}
 <div class="container mt-4">
     <h2>Your Cart</h2>
 
     {% if grouped_items %}
         {% for farmer, items in grouped_items.items %}
         <h4>Farmer: {{ farmer.username }}</h4>
-        <table class="table table-bordered">
+
+        <table class="table table-bordered align-middle">
             <thead>
                 <tr>
                     <th>Product</th>
-                    <th>Quantity</th>
+                    <th style="width: 160px;">Quantity</th>
                     <th>Unit Price</th>
                     <th>Subtotal</th>
-                    <th>Actions</th>
+                    <th style="width: 220px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in items %}
                 <tr>
+                    <td>{{ item.product.name }}</td>
+
                     <td>
-                        {% if item.product.image %}
-                        <img src="{{ item.product.image.url }}" width="50">
-                        {% endif %}
-                        {{ item.product.name }}
+                        <a href="{% url 'update_cart_quantity' item.id 'decrease' %}"
+                           class="btn btn-sm btn-secondary">−</a>
+
+                        <strong class="mx-2">{{ item.quantity }}</strong>
+
+                        <a href="{% url 'update_cart_quantity' item.id 'increase' %}"
+                           class="btn btn-sm btn-secondary">+</a>
                     </td>
-                    <td>
-                        <a href="{% url 'update_cart_quantity' item.id 'decrease' %}" class="btn btn-sm btn-secondary">-</a>
-                        {{ item.quantity }}
-                        <a href="{% url 'update_cart_quantity' item.id 'increase' %}" class="btn btn-sm btn-secondary">+</a>
-                    </td>
+
                     <td>{{ item.product.price_per_unit }}</td>
-                    <td>{{ item.quantity|mul:item.product.price_per_unit|floatformat:2 }}</td>
+
+                    <td>{{ item.subtotal|floatformat:2 }}</td>
+
                     <td>
-                        <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger btn-sm">Remove</a>
+                        <a href="{% url 'remove_from_cart' item.id %}"
+                           class="btn btn-sm btn-danger">Remove</a>
+
                         {% if not item.saved_for_later %}
-                        <a href="{% url 'save_for_later' item.id %}" class="btn btn-info btn-sm">Save for Later</a>
+                            <a href="{% url 'save_for_later' item.id %}"
+                               class="btn btn-sm btn-info">Save</a>
                         {% else %}
-                        <a href="{% url 'move_to_cart' item.id %}" class="btn btn-primary btn-sm">Move to Cart</a>
+                            <a href="{% url 'move_to_cart' item.id %}"
+                               class="btn btn-sm btn-primary">Move Back</a>
                         {% endif %}
                     </td>
                 </tr>
@@ -48,30 +55,24 @@
         </table>
         {% endfor %}
 
-        <!-- Cart Summary -->
-        {% comment %} Calculate subtotal manually {% endcomment %}
-        {% with 0 as subtotal %}
-            {% for farmer, items in grouped_items.items %}
-                {% for item in items %}
-                    {% with item.quantity|floatformat:2|mul:item.product.price_per_unit as item_total %}
-                        {% with subtotal|add:item_total as subtotal %}
-                        {% endwith %}
-                    {% endwith %}
-                {% endfor %}
-            {% endfor %}
-            <div class="card mt-3 p-3">
-                <h5>Cart Summary</h5>
-                <p>Subtotal: {{ subtotal }}</p>
-                <p>Delivery estimate: 200</p>
-                <p>Taxes: 0</p>
-                <p><strong>Total: {{ subtotal|add:200 }}</strong></p>
-                <a href="{% url 'checkout' %}" class="btn btn-success">Proceed to Checkout</a>
+        <!-- CART SUMMARY -->
+        <div class="card mt-4 p-3">
+            <h5>Cart Summary</h5>
+            <p>Subtotal: {{ subtotal }}</p>
+            <p>Delivery: {{ delivery_fee }}</p>
+            <p>Tax: 0</p>
+            <hr>
+            <h5>Total: {{ total }}</h5>
 
-            </div>
-        {% endwith %}
+            <a href="{% url 'checkout' %}" class="btn btn-success mt-2">
+                Proceed to Checkout
+            </a>
+        </div>
 
     {% else %}
-        <p>Your cart is empty. <a href="{% url 'product_list' %}">Browse Products</a></p>
+        <p>Your cart is empty.
+            <a href="{% url 'product_list' %}">Browse Products</a>
+        </p>
     {% endif %}
 </div>
 {% endblock %}
