@@ -117,8 +117,46 @@ def dashboard_farmer(request):
     if not request.user.profile.is_farmer():
         messages.error(request, "Access denied.")
         return redirect("home")
+
     products = Product.objects.filter(farmer=request.user)
-    return render(request, "dashboard_farmer.html", {"products": products})
+
+    # Total revenue (sum of all orders for the farmer's products)
+    total_revenue = Order.objects.filter(product__farmer=request.user).aggregate(total=Sum('total_price'))['total'] or 0
+
+    # Total orders (number of orders for the farmer's products)
+    total_orders = Order.objects.filter(product__farmer=request.user).count()
+
+    # Total products listed
+    total_products = products.count()
+
+    # Low stock alerts (define low stock threshold, e.g., 5 units)
+    low_stock = products.filter(quantity__lte=5)
+
+    context = {
+        'products': products,
+        'total_revenue': total_revenue,
+        'total_orders': total_orders,
+        'total_products': total_products,
+        'low_stock': low_stock,
+    }
+
+    return render(request, "dashboard_farmer.html", context)
+
+@login_required
+def farmer_orders(request):
+    # Ensure only farmers access this page
+    if not request.user.profile.is_farmer():
+        messages.error(request, "Access denied.")
+        return redirect("home")
+
+    # Fetch orders for the farmer's products
+    orders = Order.objects.filter(product__farmer=request.user).order_by('-order_date')
+
+    context = {
+        'orders': orders
+    }
+    return render(request, 'farmer_orders.html', context)
+
 
 
 @login_required

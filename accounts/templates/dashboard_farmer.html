@@ -66,8 +66,8 @@
                 {% for product in products %}
                     <tr>
                         <td>{{ product.name }}</td>
-                        <td>{{ product.stock }}</td>
-                        <td>{{ product.price }}</td>
+                        <td>{{ product.quantity }}</td>
+                        <td>{{ product.price_per_unit }}</td>
                     </tr>
                 {% empty %}
                     <tr>
@@ -115,7 +115,8 @@
             </tbody>
         </table>
 
-        <a href="/orders/" class="btn view-all-btn">View All Orders</a>
+        <a href="{% url 'farmer_orders' %}" class="btn">View Customer Orders</a>
+
     </div>
 
 </section>
