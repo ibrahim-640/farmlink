@@ -1,10 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Product Recommendations{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>🛒 Recommended For You</h2>
+    <p class="text-muted">
+        Based on your order history, you might like these products.
+    </p>
 
-</body>
-</html>
+    {% if recommendations %}
+        <div class="row">
+            {% for product in recommendations %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}"
+                             class="card-img-top"
+                             alt="{{ product.name }}"
+                             style="height:200px; object-fit:cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="text-muted">{{ product.category }}</p>
+                        <p class="fw-bold text-success">
+                            KSh {{ product.price_per_unit }} / {{ product.unit }}
+                        </p>
+                        <a href="{% url 'add_to_cart' product.id %}"
+                           class="btn btn-success btn-sm w-100">
+                            Add To Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No recommendations yet. Start ordering to get personalized suggestions.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

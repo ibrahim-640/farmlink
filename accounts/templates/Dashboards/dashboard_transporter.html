@@ -1,227 +1,358 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <div class="container mt-4">
 
-  <h2 class="mb-4">Transporter Dashboard 🚚</h2>
-  <p>Welcome, {{ user.username }}!</p>
+    <h2 class="mb-4">Transporter Dashboard 🚚</h2>
+    <p>Welcome, {{ user.username }}!</p>
 
-  <!-- Stats Cards -->
-  <div class="row mt-4">
-
-    <div class="col-md-3 mb-3">
-      <div class="card text-white bg-success">
-        <div class="card-body">
-          <h5 class="card-title">Total Earnings</h5>
-          <p class="card-text">Ksh {{ earnings }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-      <div class="card text-white bg-primary">
-        <div class="card-body">
-          <h5 class="card-title">Active Trips</h5>
-          <p class="card-text">{{ active_jobs_count }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-      <div class="card text-white bg-secondary">
-        <div class="card-body">
-          <h5 class="card-title">Completed Jobs</h5>
-          <p class="card-text">{{ completed_jobs_count }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-      <div class="card text-white bg-warning">
-        <div class="card-body">
-          <h5 class="card-title">Driver Rating</h5>
-          <p class="card-text">{{ transporter_rating }} ⭐</p>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Active Delivery -->
-  <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span>Current Delivery</span>
-      {% if active_delivery %}
-        <span class="badge bg-info">{{ active_delivery.status }}</span>
-      {% endif %}
-    </div>
-
-    {% if active_delivery %}
-      <div class="card-body">
-        <p><strong>Order ID:</strong> #{{ active_delivery.order.id }}</p>
-        <p><strong>Product:</strong> {{ active_delivery.order.product.name }}</p>
-        <p><strong>Buyer:</strong> {{ active_delivery.order.buyer.username }}</p>
-        <p><strong>Pickup:</strong> {{ active_delivery.pickup_location }}</p>
-        <p><strong>Delivery:</strong> {{ active_delivery.delivery_location }}</p>
-        <p><strong>Urgency:</strong> {{ active_delivery.urgency|title }}</p>
-        {% if active_delivery.vehicle %}
-          <p><strong>Vehicle:</strong>
-            {{ active_delivery.vehicle.vehicle_type|title }}
-            ({{ active_delivery.vehicle.plate_number }})
-          </p>
-        {% endif %}
-
-        <!-- Mark as Delivered -->
-        <form method="post"
-              action="{% url 'mark_delivered' active_delivery.id %}"
-              style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-success mt-2">
-            ✅ Mark as Delivered
-          </button>
-        </form>
-      </div>
-    {% else %}
-      <div class="card-body text-muted">
-        No active deliveries at the moment.
-      </div>
-    {% endif %}
-  </div>
-
-  <!-- Available Jobs -->
-  <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span>Available Jobs</span>
-      <a href="{% url 'transport_jobs' %}"
-         class="btn btn-sm btn-outline-primary">View All</a>
-    </div>
-
-    <ul class="list-group list-group-flush">
-      {% for order in available_jobs %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <strong>{{ order.product.name }}</strong><br>
-            <small class="text-muted">
-              Buyer: {{ order.buyer.username }}<br>
-              Quantity: {{ order.quantity }} {{ order.product.unit }}<br>
-              Value: Ksh {{ order.total_price }}
-            </small>
-          </div>
-          <form method="post" action="{% url 'accept_job' order.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-success btn-sm">
-              Accept Job
-            </button>
-          </form>
-        </li>
-      {% empty %}
-        <li class="list-group-item text-muted">
-          No available jobs at the moment.
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-
-  <!-- In-Progress Jobs -->
-  <div class="card mb-4">
-    <div class="card-header">In-Progress Jobs</div>
-    <ul class="list-group list-group-flush">
-      {% for job in in_progress_jobs %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <strong>{{ job.order.product.name }}</strong><br>
-            <small class="text-muted">
-              Pickup: {{ job.pickup_location }}
-              → Delivery: {{ job.delivery_location }}<br>
-              Urgency: {{ job.urgency|title }}<br>
-              Buyer: {{ job.order.buyer.username }}
-            </small><br>
-            {% if job.vehicle %}
-              <small>
-                Vehicle: {{ job.vehicle.vehicle_type|title }}
-                ({{ job.vehicle.plate_number }})
-              </small>
-            {% else %}
-              <small class="text-danger">Vehicle: Not assigned</small>
-            {% endif %}
-          </div>
-          <div class="d-flex flex-column align-items-end gap-2">
-            <span class="badge bg-primary">{{ job.status }}</span>
-            <form method="post"
-                  action="{% url 'mark_delivered' job.id %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-success btn-sm mt-1">
-                ✅ Mark Delivered
-              </button>
-            </form>
-          </div>
-        </li>
-      {% empty %}
-        <li class="list-group-item text-muted">
-          No active jobs at the moment.
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-
-  <!-- Vehicle Status -->
-  <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span>My Vehicles</span>
-      <a href="{% url 'add_vehicle' %}"
-         class="btn btn-sm btn-primary">+ Add Vehicle</a>
-    </div>
-
-    {% if vehicles %}
-      <ul class="list-group list-group-flush">
-        {% for vehicle in vehicles %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <strong>{{ vehicle.plate_number }}</strong>
-              ({{ vehicle.vehicle_type|title }})<br>
-              Capacity: {{ vehicle.capacity }} kg<br>
-              Status:
-              {% if vehicle.is_active %}
-                <span style="color:green;">Active</span>
-              {% else %}
-                <span style="color:red;">Inactive</span>
-              {% endif %}
+    <!-- STATS -->
+    <div class="row mt-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Total Earnings</h5>
+                    <p class="card-text fw-bold">Ksh {{ earnings }}</p>
+                </div>
             </div>
-            <a href="{% url 'manage_vehicle' vehicle.id %}"
-               class="btn btn-sm btn-outline-secondary">Manage</a>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <div class="card-body text-muted">
-        No vehicle registered yet.<br>
-        <a href="{% url 'add_vehicle' %}"
-           class="btn btn-sm btn-primary mt-2">Add Vehicle</a>
-      </div>
-    {% endif %}
-  </div>
-
-  <!-- Weekly Earnings Chart -->
-  <div class="card mb-4">
-    <div class="card-header">Weekly Earnings (Ksh)</div>
-    <div class="card-body">
-      <div class="d-flex align-items-end justify-content-between"
-           style="height:200px; gap:8px;">
-        {% for h in weekly_earnings %}
-          <div style="flex:1; height:{{ h }}%;
-                      background-color:#28a745;
-                      border-radius:4px 4px 0 0;
-                      min-height: 4px;">
-          </div>
-        {% endfor %}
-      </div>
-      <div class="d-flex justify-content-between mt-2">
-        {% for day in week_days %}
-          <small style="flex:1; text-align:center;">{{ day }}</small>
-        {% endfor %}
-      </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Active Trips</h5>
+                    <p class="card-text fw-bold">{{ active_jobs_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">Completed Jobs</h5>
+                    <p class="card-text fw-bold">{{ completed_jobs_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Driver Rating</h5>
+                    <p class="card-text fw-bold">
+                        {{ transporter_rating }} ⭐
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+        <!-- TRANSPORTER EARNINGS WALLET -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold bg-success text-white">
+            💰 My Earnings
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <h5>Total Earned</h5>
+                    <h3 class="text-success fw-bold">
+                        Ksh {{ wallet.total_earned }}
+                    </h3>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h5>Pending Payout</h5>
+                    <h3 class="text-warning fw-bold">
+                        Ksh {{ wallet.pending_payout }}
+                    </h3>
+                    <small class="text-muted">
+                        Will be sent to your M-Pesa
+                    </small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h5>Withheld</h5>
+                    <h3 class="text-danger fw-bold">
+                        Ksh {{ wallet.total_withheld }}
+                    </h3>
+                </div>
+            </div>
+
+            {% if recent_earnings %}
+                <hr>
+                <h6 class="fw-bold">Recent Earnings</h6>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for earning in recent_earnings %}
+                            <tr>
+                                <td>#{{ earning.order.id }}</td>
+                                <td class="text-success fw-bold">
+                                    Ksh {{ earning.amount }}
+                                </td>
+                                <td>
+                                    {% if earning.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark">
+                                            Pending
+                                        </span>
+                                    {% elif earning.status == 'paid' %}
+                                        <span class="badge bg-success">
+                                            Paid
+                                        </span>
+                                    {% elif earning.status == 'withheld' %}
+                                        <span class="badge bg-danger">
+                                            Withheld
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ earning.created_at|date:"M d, Y" }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- CURRENT ACTIVE DELIVERY -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between
+                    align-items-center fw-bold">
+            <span>🚛 Current Delivery</span>
+            {% if active_delivery %}
+                <span class="badge bg-info text-dark">
+                    {{ active_delivery.status }}
+                </span>
+            {% endif %}
+        </div>
+
+        {% if active_delivery %}
+            <div class="card-body">
+                <p>
+                    <strong>Order #:</strong>
+                    {{ active_delivery.order.id }}
+                </p>
+                <p>
+                    <strong>Product:</strong>
+                    {{ active_delivery.order.product.name }}
+                </p>
+                <p>
+                    <strong>Buyer:</strong>
+                    {{ active_delivery.order.buyer.username }}
+                </p>
+                <p>
+                    <strong>Pickup:</strong>
+                    {{ active_delivery.pickup_location }}
+                </p>
+                <p>
+                    <strong>Delivery to:</strong>
+                    {{ active_delivery.delivery_location }}
+                </p>
+                <p>
+                    <strong>Urgency:</strong>
+                    {{ active_delivery.urgency|title }}
+                </p>
+                {% if active_delivery.vehicle %}
+                    <p>
+                        <strong>Vehicle:</strong>
+                        {{ active_delivery.vehicle.vehicle_type|title }}
+                        ({{ active_delivery.vehicle.plate_number }})
+                    </p>
+                {% endif %}
+
+                <form method="post"
+                      action="{% url 'mark_delivered' active_delivery.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success mt-2">
+                        ✅ Mark as Delivered
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="card-body text-muted">
+                No active delivery at the moment.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- AVAILABLE JOBS — sorted high urgency first -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between
+                    align-items-center fw-bold">
+            <span>📦 Available Jobs</span>
+            <a href="{% url 'transport_jobs' %}"
+               class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+
+        <ul class="list-group list-group-flush">
+            {% for job in available_jobs %}
+                <li class="list-group-item d-flex
+                            justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ job.order.product.name }}</strong>
+
+                        {% if job.urgency == 'high' %}
+                            <span class="badge bg-danger ms-2">
+                                🔴 High
+                            </span>
+                        {% elif job.urgency == 'medium' %}
+                            <span class="badge bg-warning text-dark ms-2">
+                                🟡 Medium
+                            </span>
+                        {% else %}
+                            <span class="badge bg-success ms-2">
+                                🟢 Low
+                            </span>
+                        {% endif %}
+
+                        <br>
+                        <small class="text-muted">
+                            Buyer: {{ job.order.buyer.username }}<br>
+                            Quantity: {{ job.order.quantity }}
+                            {{ job.order.product.unit }}<br>
+                            From: {{ job.pickup_location }}<br>
+                            To: {{ job.delivery_location }}
+                        </small>
+                    </div>
+
+                    <form method="post"
+                          action="{% url 'accept_job' job.order.id %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-success btn-sm">
+                            Accept Job
+                        </button>
+                    </form>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">
+                    No available jobs at the moment.
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- IN-PROGRESS JOBS -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold">🔄 In-Progress Jobs</div>
+        <ul class="list-group list-group-flush">
+            {% for job in in_progress_jobs %}
+                <li class="list-group-item d-flex
+                            justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ job.order.product.name }}</strong><br>
+                        <small class="text-muted">
+                            Buyer: {{ job.order.buyer.username }}<br>
+                            Pickup: {{ job.pickup_location }}
+                            → Delivery: {{ job.delivery_location }}<br>
+                            Urgency: {{ job.urgency|title }}
+                        </small><br>
+                        {% if job.vehicle %}
+                            <small>
+                                Vehicle: {{ job.vehicle.vehicle_type|title }}
+                                ({{ job.vehicle.plate_number }})
+                            </small>
+                        {% else %}
+                            <small class="text-danger">
+                                No vehicle assigned
+                            </small>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex flex-column align-items-end gap-2">
+                        <span class="badge bg-primary">{{ job.status }}</span>
+                        <form method="post"
+                              action="{% url 'mark_delivered' job.id %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn btn-success btn-sm mt-1">
+                                ✅ Mark Delivered
+                            </button>
+                        </form>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">
+                    No active jobs at the moment.
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- MY VEHICLES -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between
+                    align-items-center fw-bold">
+            <span>🚗 My Vehicles</span>
+            <a href="{% url 'add_vehicle' %}"
+               class="btn btn-sm btn-success">
+                + Add Vehicle
+            </a>
+        </div>
+
+        {% if vehicles %}
+            <ul class="list-group list-group-flush">
+                {% for vehicle in vehicles %}
+                    <li class="list-group-item d-flex
+                                justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ vehicle.plate_number }}</strong>
+                            ({{ vehicle.vehicle_type|title }})<br>
+                            Capacity: {{ vehicle.capacity }} kg<br>
+                            Status:
+                            {% if vehicle.is_active %}
+                                <span style="color:green;">Active</span>
+                            {% else %}
+                                <span style="color:red;">Inactive</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'manage_vehicle' vehicle.id %}"
+                           class="btn btn-sm btn-outline-secondary">
+                            Manage
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="card-body text-muted">
+                No vehicles registered yet.<br>
+                <a href="{% url 'add_vehicle' %}"
+                   class="btn btn-sm btn-success mt-2">
+                    Add Vehicle
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- WEEKLY EARNINGS CHART -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold">
+            📊 Weekly Earnings (Ksh)
+        </div>
+        <div class="card-body">
+            <div class="d-flex align-items-end justify-content-between"
+                 style="height:200px; gap:8px;">
+                {% for h in weekly_earnings %}
+                    <div style="flex:1;
+                                height:{{ h }}%;
+                                background-color:#28a745;
+                                border-radius:4px 4px 0 0;
+                                min-height:4px;">
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex justify-content-between mt-2">
+                {% for day in week_days %}
+                    <small style="flex:1; text-align:center;">
+                        {{ day }}
+                    </small>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
 </div>
 {% endblock %}

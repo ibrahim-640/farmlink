@@ -1,28 +1,199 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<section class="inventory-dashboard">
-    <h2>My Inventory 📦</h2>
-    <p>Here are all the products you have added or purchased.</p>
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">📦 My Inventory</h2>
+            {% if view_type == 'farmer' %}
+                <p class="text-muted">
+                    All products you have listed on FarmLink.
+                </p>
+            {% else %}
+                <p class="text-muted">
+                    Products you have ordered through FarmLink.
+                </p>
+            {% endif %}
+        </div>
+
+        {% if view_type == 'farmer' %}
+            <a href="{% url 'add_product' %}"
+               class="btn btn-success">
+                + Add New Product
+            </a>
+        {% endif %}
+    </div>
 
     {% if products %}
-        <div class="products-grid">
-            {% for product in products %}
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                    </div>
-                    <div class="product-info">
-                        <h3>{{ product.name }}</h3>
-                        <p>Category: {{ product.category.name }}</p>
-                        <p>Price: Ksh {{ product.price }}</p>
-                        <p>Stock: {{ product.stock }}</p>
-                    </div>
-                </div>
-            {% endfor %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Image</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price (Ksh)</th>
+                        {% if view_type == 'farmer' %}
+                            <th>Stock</th>
+                            <th>Availability</th>
+                            <th>Actions</th>
+                        {% else %}
+                            <th>Unit</th>
+                            <th>Order Status</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr>
+                            <!-- Image -->
+                            <td>
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}"
+                                         alt="{{ product.name }}"
+                                         style="width:50px;
+                                                height:50px;
+                                                object-fit:cover;
+                                                border-radius:6px;">
+                                {% else %}
+                                    <img src="{% static 'images/placeholder.png' %}"
+                                         alt="No image"
+                                         style="width:50px;
+                                                height:50px;
+                                                object-fit:cover;
+                                                border-radius:6px;">
+                                {% endif %}
+                            </td>
+
+                            <!-- Product Name -->
+                            <td>
+                                <strong>{{ product.name }}</strong>
+                            </td>
+
+                            <!-- Category -->
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ product.category|title }}
+                                </span>
+                            </td>
+
+                            <!-- Price -->
+                            <td>
+                                Ksh {{ product.price_per_unit }}
+                            </td>
+
+                            {% if view_type == 'farmer' %}
+                                <!-- Stock -->
+                                <td>
+                                    {% if product.quantity == 0 %}
+                                        <span class="text-danger fw-bold">
+                                            Out of stock
+                                        </span>
+                                    {% elif product.quantity <= 5 %}
+                                        <span class="text-warning fw-bold">
+                                            {{ product.quantity }}
+                                            {{ product.unit }} ⚠️
+                                        </span>
+                                    {% else %}
+                                        {{ product.quantity }}
+                                        {{ product.unit }}
+                                    {% endif %}
+                                </td>
+
+                                <!-- Availability -->
+                                <td>
+                                    {% if product.is_available %}
+                                        <span class="badge bg-success">
+                                            Available
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            Unavailable
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Actions -->
+                                <td>
+                                    <a href="{% url 'edit_product' product.id %}"
+                                       class="btn btn-sm btn-outline-success">
+                                        Edit
+                                    </a>
+                                    <a href="{% url 'delete_product' product.id %}"
+                                       class="btn btn-sm btn-outline-danger ms-1">
+                                        Delete
+                                    </a>
+                                </td>
+
+                            {% else %}
+                                <!-- Unit for buyer -->
+                                <td>{{ product.unit }}</td>
+
+                                <!-- Order status for buyer -->
+                                <td>
+                                    {% for order in orders %}
+                                        {% if order.product.id == product.id %}
+                                            {% if order.status == 'pending' %}
+                                                <span class="badge bg-warning text-dark">
+                                                    ⏳ Pending
+                                                </span>
+                                            {% elif order.status == 'confirmed' %}
+                                                <span class="badge bg-info text-dark">
+                                                    ✅ Confirmed
+                                                </span>
+                                            {% elif order.status == 'in_transit' %}
+                                                <span class="badge bg-primary">
+                                                    🚚 In Transit
+                                                </span>
+                                            {% elif order.status == 'delivered' %}
+                                                <span class="badge bg-success">
+                                                    ✅ Delivered
+                                                </span>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+
     {% else %}
-        <p class="empty">You have no products in your inventory yet.</p>
+        <div class="alert alert-info mt-4">
+            <i class="fas fa-info-circle me-2"></i>
+            {% if view_type == 'farmer' %}
+                You have not listed any products yet.
+                <a href="{% url 'add_product' %}" class="alert-link">
+                    Add your first product
+                </a>
+            {% else %}
+                You have not ordered any products yet.
+                <a href="{% url 'product_list' %}" class="alert-link">
+                    Browse the marketplace
+                </a>
+            {% endif %}
+        </div>
     {% endif %}
-</section>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+        {% if view_type == 'farmer' %}
+            <a href="{% url 'dashboard_farmer' %}"
+               class="btn btn-outline-secondary">
+                ← Back to Dashboard
+            </a>
+        {% else %}
+            <a href="{% url 'dashboard_buyer' %}"
+               class="btn btn-outline-secondary">
+                ← Back to Dashboard
+            </a>
+        {% endif %}
+    </div>
+
+</div>
 {% endblock %}

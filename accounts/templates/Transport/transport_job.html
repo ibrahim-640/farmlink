@@ -1,59 +1,186 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="transport-jobs-container">
-    <h2 class="page-title">Available Transport Jobs</h2>
+<div class="container mt-4">
+
+    <h2 class="fw-bold mb-4">📦 Available Transport Jobs</h2>
 
     <!-- Urgency Filter -->
-    <div class="filter-section">
-        <label for="urgency_filter">Filter by Urgency:</label>
-        <select id="urgency_filter" name="urgency_filter" onchange="filterJobs()">
-            <option value="">All</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-        </select>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        Filter by Urgency:
+                    </label>
+                    <select id="urgency_filter"
+                            class="form-select"
+                            onchange="filterJobs()">
+                        <option value="">All Jobs</option>
+                        <option value="high">🔴 High</option>
+                        <option value="medium">🟡 Medium</option>
+                        <option value="low">🟢 Low</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mt-3">
+                    <!-- Job count display -->
+                    <p class="text-muted mt-2">
+                        Showing <span id="job_count">{{ jobs|length }}</span>
+                        job(s)
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 
     {% if jobs %}
-        <div class="jobs-list">
+        <div id="jobs_list">
             {% for job in jobs %}
-            <div class="job-card" data-urgency="{{ job.urgency|lower }}">
-                <div class="job-info">
-                    <p><strong>Order ID:</strong> {{ job.order.id }}</p>
-                    <p><strong>Pickup:</strong> {{ job.pickup_location }}</p>
-                    <p><strong>Delivery:</strong> {{ job.delivery_location }}</p>
-                    <p><strong>Status:</strong> {{ job.status }}</p>
-                    <p><strong>Urgency:</strong> {{ job.urgency|capfirst }}</p>
+                <!--
+                    data-urgency stores the raw lowercase value
+                    from the model e.g. 'high', 'medium', 'low'
+                    This is what filterJobs() compares against
+                -->
+                <div class="card mb-3 job-card"
+                     data-urgency="{{ job.urgency|lower }}">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <!-- Job Details -->
+                            <div class="col-md-5">
+                                <h5 class="fw-bold">
+                                    {{ job.order.product.name }}
+
+                                    <!-- Urgency badge -->
+                                    {% if job.urgency == 'high' %}
+                                        <span class="badge bg-danger ms-2">
+                                            🔴 High
+                                        </span>
+                                    {% elif job.urgency == 'medium' %}
+                                        <span class="badge bg-warning
+                                                     text-dark ms-2">
+                                            🟡 Medium
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-success ms-2">
+                                            🟢 Low
+                                        </span>
+                                    {% endif %}
+                                </h5>
+
+                                <p class="mb-1">
+                                    <strong>Order #:</strong>
+                                    {{ job.order.id }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Quantity:</strong>
+                                    {{ job.order.quantity }}
+                                    {{ job.order.product.unit }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>📍 Pickup:</strong>
+                                    {{ job.pickup_location|default:"Not specified" }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>🏁 Delivery:</strong>
+                                    {{ job.delivery_location|default:"Not specified" }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Status:</strong>
+                                    {{ job.status }}
+                                </p>
+                            </div>
+
+                            <!-- Buyer Contact -->
+                            <div class="col-md-4">
+                                <h6 class="fw-bold">Buyer Contact</h6>
+                                <p class="mb-1">
+                                    <strong>Name:</strong>
+                                    {{ job.order.buyer.username }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>📱 Phone:</strong>
+                                    {% if job.order.buyer.profile.phone %}
+                                        <a href="tel:{{ job.order.buyer.profile.phone }}"
+                                           class="text-success fw-bold">
+                                            {{ job.order.buyer.profile.phone }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            Not provided
+                                        </span>
+                                    {% endif %}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>📍 Location:</strong>
+                                    {{ job.order.buyer.profile.location|default:"Not provided" }}
+                                </p>
+                            </div>
+
+                            <!-- Accept Button -->
+                            <div class="col-md-3 d-flex
+                                        align-items-center
+                                        justify-content-end">
+                                {% if job.status == 'Pending' %}
+                                    <form method="POST"
+                                          action="{% url 'accept_job' job.order.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-success">
+                                            ✅ Accept Job
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="badge bg-secondary p-2">
+                                        Already Accepted
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
-                {% if job.status == 'Pending' %}
-                <form method="POST" action="{% url 'accept_job' job.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary">Accept Job</button>
-                </form>
-                {% else %}
-                    <span class="job-accepted">Accepted</span>
-                {% endif %}
-            </div>
             {% endfor %}
         </div>
+
     {% else %}
-        <p>No transport jobs available at the moment.</p>
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No transport jobs available at the moment.
+            Check back soon.
+        </div>
     {% endif %}
+
 </div>
 
 <script>
 function filterJobs() {
+    // Get selected urgency value from dropdown
     const filterValue = document.getElementById('urgency_filter').value;
-    const jobs = document.querySelectorAll('.job-card');
 
-    jobs.forEach(job => {
-        if (filterValue === "" || job.dataset.urgency === filterValue) {
-            job.style.display = "block";
+    // Get all job cards
+    const jobCards = document.querySelectorAll('.job-card');
+
+    // Count how many are visible after filtering
+    let visibleCount = 0;
+
+    jobCards.forEach(card => {
+        // Get urgency from data attribute — already lowercase
+        // because we used {{ job.urgency|lower }} in template
+        const cardUrgency = card.dataset.urgency;
+
+        // Show card if no filter selected OR urgency matches
+        if (filterValue === "" || cardUrgency === filterValue) {
+            card.style.display = "block";
+            visibleCount++;
         } else {
-            job.style.display = "none";
+            card.style.display = "none";
         }
     });
+
+    // Update the job count display
+    document.getElementById('job_count').textContent = visibleCount;
 }
 </script>
+
 {% endblock %}

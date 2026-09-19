@@ -1,189 +1,322 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-
 <section class="buyer-dashboard">
 
-  <!-- Welcome Header -->
-  <div class="dashboard-header">
-    <h2>Hello, {{ user.username }} 👋</h2>
-    <p>Here is your buying activity summary.</p>
+    <!-- Welcome Header -->
+    <div class="dashboard-header">
+        <h2>Hello, {{ user.username }} 👋</h2>
+        <p>Here is your buying activity summary.</p>
 
-    {% if cart %}
-      <div style="margin-top:15px;margin-bottom:20px;">
-        <a href="{% url 'cart_view' %}" class="btn btn-orange">
-          🛒 View Cart ({{ cart_count }})
-        </a>
-      </div>
-    {% endif %}
-  </div>
-
-  <!-- Stats Section -->
-  <div class="stats-grid">
-
-    <div class="stat-card bg-blue-100">
-      <h3>Active Orders</h3>
-      <p>{{ pending_deliveries_count }}</p>
+        {% if cart %}
+            <div style="margin-top:15px; margin-bottom:20px;">
+                <a href="{% url 'cart_view' %}" class="btn btn-warning">
+                    🛒 View Cart ({{ cart_count }})
+                </a>
+            </div>
+        {% endif %}
     </div>
 
-    <div class="stat-card bg-green-100">
-      <h3>Total Spent (Ksh)</h3>
-      <p>{{ total_spent }}</p>
-    </div>
-
-    <div class="stat-card bg-yellow-100">
-      <h3>Saved for Later</h3>
-      <p>{{ saved_for_later }}</p>
-    </div>
-
-    <div class="stat-card bg-purple-100">
-      <h3>Total Orders</h3>
-      <p>{{ total_orders }}</p>
-    </div>
-
-  </div>
-
-  <!-- Recent Orders Section -->
-  <section class="orders-section mt-8">
-    <h3>Recent Orders</h3>
-    <div class="orders-list">
-      {% for order in recent_orders %}
-        <div class="order-card">
-          <h4>{{ order.product.name }}</h4>
-          <p>Farmer: {{ order.product.farmer.username }}</p>
-          <p>Status: <strong>{{ order.status }}</strong></p>
-          <p>Total: Ksh {{ order.total_price }}</p>
-          <p>Date: {{ order.order_date|date:"M d, Y" }}</p>
-
-          {% if order.status != 'cancelled' %}
-            {% if not order.transport_job %}
-              <a href="{% url 'book_transport' order.id %}" class="btn btn-orange mt-2">
-                Book Transport
-              </a>
-            {% else %}
-              <p class="text-sm text-gray-500 mt-2">Transport already booked</p>
-            {% endif %}
-          {% endif %}
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card bg-blue-100">
+            <h3>Total Orders</h3>
+            <p>{{ total_orders }}</p>
         </div>
-      {% empty %}
-        <p class="empty">No recent orders. Place an order to get started.</p>
-      {% endfor %}
-    </div>
-  </section>
-
-  <!-- Cancelled Orders Section -->
-  <section class="orders-section mt-8">
-    <h3>Cancelled Orders</h3>
-    <div class="orders-list cancelled-orders">
-      {% for order in cancelled_orders %}
-        <div class="order-card cancelled">
-          <h4>{{ order.product.name }}</h4>
-          <p>Farmer: {{ order.product.farmer.username }}</p>
-          <p>Status: <strong>{{ order.status }}</strong></p>
-          <p>Total: Ksh {{ order.total_price }}</p>
-          <p>Cancelled on: {{ order.order_date|date:"M d, Y" }}</p>
+        <div class="stat-card bg-green-100">
+            <h3>Total Spent (Ksh)</h3>
+            <p>{{ total_spent }}</p>
         </div>
-      {% empty %}
-        <p class="empty">No cancelled orders.</p>
-      {% endfor %}
+        <div class="stat-card bg-yellow-100">
+            <h3>Saved for Later</h3>
+            <p>{{ saved_for_later }}</p>
+        </div>
+        <div class="stat-card bg-purple-100">
+            <h3>Pending Orders</h3>
+            <p>{{ pending_orders|length }}</p>
+        </div>
     </div>
-  </section>
 
-  <!-- Recommended Products Section -->
-  <section class="recommended-products mt-8">
-    <h3>Recommended for You</h3>
-    <ul class="products-list">
-      {% for product in recommended_products %}
-        <li class="product-card">
-          <div class="product-image">
-            {% if product.image %}
-              <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            {% else %}
-              <img src="/static/images/placeholder.png" alt="{{ product.name }}">
-            {% endif %}
-          </div>
-          <div class="product-info">
-            <p class="product-name">{{ product.name }}</p>
-            <p class="product-farmer">{{ product.farmer.username }}</p>
-            <p class="product-price">Ksh {{ product.price_per_unit }}</p>
-            <a href="{% url 'add_to_cart' product.id %}" class="btn btn-outline-green">
-              Add to Cart
+    <!-- PENDING ORDERS — with refund button after 3 days -->
+    <section class="orders-section mt-8">
+        <h3>⏳ Pending Orders</h3>
+        <div class="orders-list">
+            {% for item in pending_orders %}
+                <div class="order-card">
+                    <h4>{{ item.order.product.name }}</h4>
+                    <p>
+                        <strong>Farmer:</strong>
+                        {{ item.order.product.farmer.username }}
+                    </p>
+                    <p>
+                        <strong>Quantity:</strong>
+                        {{ item.order.quantity }}
+                        {{ item.order.product.unit }}
+                    </p>
+                    <p>
+                        <strong>Total:</strong>
+                        Ksh {{ item.order.total_price }}
+                    </p>
+                    <p>
+                        <strong>Date:</strong>
+                        {{ item.order.order_date|date:"M d, Y" }}
+                    </p>
+                    <p>
+                        <strong>Waiting:</strong>
+                        {{ item.days_waiting }} day(s)
+                    </p>
+
+                    {% if item.refund_requested %}
+                        <span class="badge bg-warning text-dark">
+                            🔄 Refund Requested
+                        </span>
+                    {% elif item.can_request_refund %}
+                        <div class="alert alert-warning mt-2">
+                            Farmer has not confirmed for
+                            {{ item.days_waiting }} days.
+                            You can request a refund.
+                        </div>
+                        <form method="POST"
+                              action="{% url 'request_refund' item.order.id %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn btn-warning mt-1">
+                                💰 Request Refund
+                            </button>
+                        </form>
+                    {% else %}
+                        {% with days_left=3|add:"-"|add:item.days_waiting %}
+                            <span class="badge bg-warning text-dark">
+                                ⏳ Awaiting farmer confirmation
+                            </span>
+                            <small class="text-muted d-block mt-1">
+                                Refund available in
+                                {{ item.days_waiting|stringformat:"d" }}
+                                more day(s) if not confirmed
+                            </small>
+                        {% endwith %}
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p class="empty">No pending orders.</p>
+            {% endfor %}
+        </div>
+    </section>
+    <!-- CONFIRMED ORDERS — request transport -->
+    <section class="orders-section mt-8">
+        <h3>
+            ✅ Confirmed Orders
+            <small class="text-muted" style="font-size:0.8rem;">
+                (Request transport to proceed)
+            </small>
+        </h3>
+        <div class="orders-list">
+            {% for order in confirmed_orders %}
+                <div class="order-card">
+                    <h4>{{ order.product.name }}</h4>
+                    <p>
+                        <strong>Farmer:</strong>
+                        {{ order.product.farmer.username }}
+                    </p>
+                    <p>
+                        <strong>Quantity:</strong>
+                        {{ order.quantity }} {{ order.product.unit }}
+                    </p>
+                    <p>
+                        <strong>Total:</strong>
+                        Ksh {{ order.total_price }}
+                    </p>
+                    <p>
+                        <strong>Date:</strong>
+                        {{ order.order_date|date:"M d, Y" }}
+                    </p>
+
+                    {% if order.transport_job %}
+                        <span class="badge bg-info text-dark">
+                            🚚 Transport Requested
+                        </span>
+                    {% else %}
+                        <a href="{% url 'request_transport' order.id order.product.id %}"
+                           class="btn btn-warning mt-2">
+                            🚚 Request Transport
+                        </a>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p class="empty">No confirmed orders yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- IN TRANSIT — active deliveries -->
+    <section class="orders-section mt-8">
+        <h3>🚚 Active Deliveries (In Transit)</h3>
+        <div class="orders-list">
+            {% for order in in_transit_orders %}
+                <div class="order-card">
+                    <h4>{{ order.product.name }}</h4>
+                    <p>
+                        <strong>Farmer:</strong>
+                        {{ order.product.farmer.username }}
+                    </p>
+                    <p>
+                        <strong>Total:</strong>
+                        Ksh {{ order.total_price }}
+                    </p>
+
+                    {% with job=order.transport_job %}
+                        {% if job %}
+                            <p>
+                                <strong>Transporter:</strong>
+                                {{ job.driver.username|default:"Assigning..." }}
+                            </p>
+                            <p>
+                                <strong>Vehicle:</strong>
+                                {{ job.vehicle.plate_number|default:"TBD" }}
+                            </p>
+                            <p>
+                                <strong>Pickup:</strong>
+                                {{ job.pickup_location }}
+                            </p>
+                            <p>
+                                <strong>Delivery to:</strong>
+                                {{ job.delivery_location }}
+                            </p>
+                            <p>
+                                <strong>Urgency:</strong>
+                                {{ job.urgency|title }}
+                            </p>
+                        {% endif %}
+                    {% endwith %}
+
+                    <span class="badge bg-primary">🚚 In Transit</span>
+                </div>
+            {% empty %}
+                <p class="empty">No active deliveries.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- DELIVERED ORDERS — confirm receipt button -->
+    <section class="orders-section mt-8">
+        <h3>✅ Delivered Orders</h3>
+        <div class="orders-list">
+            {% for order in delivered_orders %}
+                <div class="order-card">
+                    <h4>{{ order.product.name }}</h4>
+                    <p>
+                        <strong>Total:</strong>
+                        Ksh {{ order.total_price }}
+                    </p>
+                    <p>
+                        <strong>Date:</strong>
+                        {{ order.order_date|date:"M d, Y" }}
+                    </p>
+
+                    {% with job=order.transport_job %}
+                        {% if job %}
+
+                            {% if job.rating %}
+                                <!-- Already rated -->
+                                <span class="badge bg-success">
+                                    ✅ Completed
+                                </span>
+                                <p>⭐ Rated: {{ job.rating.rating }}/5</p>
+
+                            {% elif job.order.payment_split.transporter_paid %}
+                                <!-- Receipt confirmed, not yet rated -->
+                                <span class="badge bg-success">
+                                    ✅ Receipt Confirmed
+                                </span>
+                                <a href="{% url 'rate_transporter' job.id %}"
+                                   class="btn btn-sm btn-outline-warning mt-2">
+                                    ⭐ Rate Transporter
+                                </a>
+
+                            {% else %}
+                                <!-- Needs buyer to confirm receipt -->
+                                <form method="POST"
+                                      action="{% url 'buyer_confirm_receipt' order.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-success mt-2">
+                                        ✅ Confirm Receipt
+                                    </button>
+                                </form>
+                                <small class="text-muted d-block mt-1">
+                                    Confirming releases payment
+                                    to the transporter
+                                </small>
+                            {% endif %}
+
+                        {% endif %}
+                    {% endwith %}
+
+                    <span class="badge bg-success ms-2">
+                        ✅ Delivered
+                    </span>
+                </div>
+            {% empty %}
+                <p class="empty">No delivered orders yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+    <!-- RECOMMENDED PRODUCTS -->
+    <section class="recommended-products mt-8">
+        <h3>Recommended for You</h3>
+        <ul class="products-list">
+            {% for product in recommended_products %}
+                <li class="product-card">
+                    <div class="product-image">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}"
+                                 alt="{{ product.name }}">
+                        {% else %}
+                            <img src="/static/images/placeholder.png"
+                                 alt="{{ product.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <p class="product-name">{{ product.name }}</p>
+                        <p class="product-farmer">
+                            {{ product.farmer.username }}
+                        </p>
+                        <p class="product-price">
+                            Ksh {{ product.price_per_unit }}
+                        </p>
+                        <a href="{% url 'add_to_cart' product.id %}"
+                           class="btn btn-outline-success btn-sm">
+                            Add to Cart
+                        </a>
+                    </div>
+                </li>
+            {% empty %}
+                <p class="empty">No recommendations at the moment.</p>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <!-- QUICK ACTIONS -->
+    <section class="quick-actions mt-8">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <a href="{% url 'product_list' %}" class="btn btn-green">
+                Browse Products
             </a>
-          </div>
-        </li>
-      {% empty %}
-        <p class="empty">No recommended products at the moment.</p>
-      {% endfor %}
-    </ul>
-  </section>
-
-  <!-- Active Delivery Tracker -->
-  <section class="delivery-tracker mt-8">
-    <h3>Active Deliveries</h3>
-    {% if active_deliveries %}
-      {% for job in active_deliveries %}
-        <div class="delivery-card">
-          <h4>Order #{{ job.order.id }}</h4>
-          <p>Product: {{ job.order.product.name }}</p>
-          <p>Transporter: {{ job.driver.username|default:"Not assigned" }}</p>
-          <p>Vehicle: {{ job.vehicle.plate_number|default:"Not assigned" }}</p>
-          <p>Status: <strong>{{ job.status }}</strong></p>
-
-          {% if job.status == 'Delivered' %}
-            {% if job.rating %}
-              <p>Your rating: {{ job.rating.rating }} / 5</p>
-              <p>Comment: {{ job.rating.comment }}</p>
-            {% else %}
-              <form method="POST" action="{% url 'rate_transporter' job.id %}">
-                {% csrf_token %}
-                <label for="rating_{{ job.id }}">Rate Transporter (1–5):</label>
-                <input id="rating_{{ job.id }}" type="number"
-                       name="rating" min="1" max="5" required>
-                <label for="comment_{{ job.id }}">Comment (optional):</label>
-                <textarea id="comment_{{ job.id }}" name="comment"></textarea>
-                <button type="submit" class="btn btn-blue mt-2">Submit Rating</button>
-              </form>
+            <a href="{% url 'inventory' %}" class="btn btn-green-outline">
+                My Inventory
+            </a>
+            <a href="{% url 'market_trends' %}" class="btn btn-blue">
+                Market Trends
+            </a>
+            {% if cart %}
+                <a href="{% url 'cart_view' %}" class="btn btn-orange">
+                    🛒 Cart ({{ cart_count }})
+                </a>
             {% endif %}
-          {% endif %}
         </div>
-      {% endfor %}
-    {% else %}
-      <p class="empty">No active deliveries at the moment.</p>
-    {% endif %}
-  </section>
-
-  <!-- Pending Deliveries Section -->
-  <section class="delivery-tracker mt-4">
-    <h3>Pending Deliveries</h3>
-    {% if pending_deliveries %}
-      {% for order in pending_deliveries %}
-        <div class="delivery-card">
-          <h4>Order #{{ order.id }}</h4>
-          <p>Product: {{ order.product.name }}</p>
-          <p>Quantity: {{ order.quantity }}</p>
-          <p>Status: Waiting for transporter</p>
-        </div>
-      {% endfor %}
-    {% else %}
-      <p class="empty">No pending deliveries.</p>
-    {% endif %}
-  </section>
-
-  <!-- Quick Actions -->
-  <section class="quick-actions mt-8">
-    <h3>Quick Actions</h3>
-    <div class="action-buttons">
-      <a href="{% url 'product_list' %}" class="btn btn-green">Browse Products</a>
-      <a href="{% url 'inventory' %}" class="btn btn-green-outline">My Inventory</a>
-      <a href="{% url 'market_trends' %}" class="btn btn-blue">Market Trends</a>
-      {% if cart %}
-        <a href="{% url 'cart_view' %}" class="btn btn-orange">
-          🛒 Cart ({{ cart_count }})
-        </a>
-      {% endif %}
-    </div>
-  </section>
+    </section>
 
 </section>
-
 {% endblock %}

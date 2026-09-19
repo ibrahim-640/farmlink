@@ -1,10 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-success text-white fw-bold">
+            ✅ Confirm Order Receipt
+        </div>
+        <div class="card-body">
+            <h5>Order #{{ order.id }}</h5>
+            <p>
+                <strong>Product:</strong>
+                {{ order.product.name }}
+            </p>
+            <p>
+                <strong>Quantity:</strong>
+                {{ order.quantity }} {{ order.product.unit }}
+            </p>
+            <p>
+                <strong>Total:</strong>
+                Ksh {{ order.total_price }}
+            </p>
+
+            <div class="alert alert-info mt-3">
+                <strong>Important:</strong>
+                By confirming receipt you confirm that:
+                <ul class="mt-2">
+                    <li>You have received the goods</li>
+                    <li>
+                        The transporter will receive
+                        their payment
+                    </li>
+                    <li>
+                        You will be prompted to rate
+                        the transporter
+                    </li>
+                </ul>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-success me-2">
+                    ✅ Yes, I Confirm Receipt
+                </button>
+                <a href="{% url 'dashboard_buyer' %}"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

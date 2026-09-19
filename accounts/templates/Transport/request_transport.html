@@ -1,70 +1,393 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="request-transport-container">
-    <h2 class="page-title">Request Transport for: {{ product.name }}</h2>
+<div class="container mt-4">
+    <h2 class="page-title">
+        🚚 Request Transport for: {{ product.name }}
+    </h2>
 
-    <div class="product-card">
-        <div class="product-image">
-            {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            {% else %}
-                <img src="/static/images/default.png" alt="No image">
-            {% endif %}
-        </div>
-        <div class="product-info">
-            <p><strong>Category:</strong> {{ product.category }}</p>
-            <p><strong>Quantity:</strong> {{ product.quantity }} {{ product.unit }}</p>
-            <p><strong>Price per Unit:</strong> Ksh {{ product.price_per_unit }}</p>
+    <!-- Product Summary Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}"
+                             alt="{{ product.name }}"
+                             class="img-fluid rounded"
+                             style="max-height:200px;
+                                    object-fit:cover;">
+                    {% else %}
+                        <img src="/static/images/default.png"
+                             alt="No image"
+                             class="img-fluid rounded">
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <p>
+                        <strong>Order #:</strong>
+                        {{ order.id }}
+                    </p>
+                    <p>
+                        <strong>Product:</strong>
+                        {{ product.name }}
+                    </p>
+                    <p>
+                        <strong>Category:</strong>
+                        {{ product.category|title }}
+                    </p>
+                    <!-- order.quantity not product.quantity -->
+                    <p>
+                        <strong>Quantity Ordered:</strong>
+                        {{ order.quantity }} {{ product.unit }}
+                    </p>
+                    <p>
+                        <strong>Price per Unit:</strong>
+                        Ksh {{ product.price_per_unit }}
+                    </p>
+                    <p>
+                        <strong>Order Total:</strong>
+                        Ksh {{ order.total_price }}
+                    </p>
+                    <p>
+                        <strong>Farmer:</strong>
+                        {{ product.farmer.username }}
+                    </p>
+
+                    <!-- Recommended urgency alert -->
+                    <div class="alert alert-info py-2 mb-0">
+                        <small>
+                            <strong>
+                                Recommended urgency for
+                                {{ product.category|title }}:
+                            </strong>
+                            {% if recommended_urgency == 'high' %}
+                                <span class="badge bg-danger">
+                                    🔴 High
+                                </span>
+                                — product is highly perishable
+                            {% elif recommended_urgency == 'medium' %}
+                                <span class="badge bg-warning text-dark">
+                                    🟡 Medium
+                                </span>
+                                — moderate shelf life
+                            {% else %}
+                                <span class="badge bg-success">
+                                    🟢 Low
+                                </span>
+                                — long shelf life
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <form method="POST" class="transport-form">
-        {% csrf_token %}
-
-        <div class="form-group">
-            <label for="pickup_location">Pickup Location</label>
-            <input type="text" name="pickup_location" id="pickup_location" placeholder="Enter pickup location" required>
+    <!-- Transport Form -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold bg-dark text-white">
+            Transport Details
         </div>
+        <div class="card-body">
 
-        <div class="form-group">
-            <label for="delivery_location">Delivery Location</label>
-            <input type="text" name="delivery_location" id="delivery_location" placeholder="Enter delivery location" required>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST"
+                  class="transport-form"
+                  id="transport_form">
+                {% csrf_token %}
+
+                <!-- Pickup Location — Google Maps Autocomplete -->
+                <div class="form-group mb-3">
+                    <label for="pickup_location"
+                           class="form-label fw-bold">
+                        📍 Pickup Location
+                        <span class="text-danger">*</span>
+                    </label>
+                    <input type="text"
+                           name="pickup_location"
+                           id="pickup_location"
+                           class="form-control"
+                           placeholder="Start typing a location in Kenya..."
+                           autocomplete="off"
+                           required>
+                    <small class="text-muted">
+                        Where should the transporter collect the goods?
+                    </small>
+                </div>
+
+                <!-- Delivery Location — Google Maps Autocomplete -->
+                <div class="form-group mb-3">
+                    <label for="delivery_location"
+                           class="form-label fw-bold">
+                        🏁 Delivery Location
+                        <span class="text-danger">*</span>
+                    </label>
+                    <input type="text"
+                           name="delivery_location"
+                           id="delivery_location"
+                           class="form-control"
+                           placeholder="Start typing a location in Kenya..."
+                           autocomplete="off"
+                           required>
+                    <small class="text-muted">
+                        Where should the goods be delivered?
+                    </small>
+                </div>
+
+                <!-- Urgency — pre-selected by product category -->
+                <div class="form-group mb-3">
+                    <label for="urgency"
+                           class="form-label fw-bold">
+                        ⚡ Urgency
+                        <span class="text-danger">*</span>
+                    </label>
+                    <select name="urgency"
+                            id="urgency"
+                            class="form-select"
+                            onchange="handleUrgencyChange()"
+                            required>
+                        <option value="high">
+                            {% if recommended_urgency == 'high' %}
+                                selected
+                            {% endif %}>
+                            🔴 High — Immediate pickup
+                            (Base: Ksh 500)
+                        </option>
+                        <option value="medium">
+                            {% if recommended_urgency == 'medium' %}
+                                selected
+                            {% endif %}>
+                            🟡 Medium — Within 24 hours
+                            (Base: Ksh 300)
+                        </option>
+                        <option value="low">
+                            {% if recommended_urgency == 'low' %}
+                                selected
+                            {% endif %}>
+                            🟢 Low — Flexible timing
+                            (Base: Ksh 150)
+                        </option>
+                    </select>
+
+                    <!-- Warning shown when buyer selects
+                         lower urgency than recommended -->
+                    <div id="urgency_warning"
+                         class="alert alert-warning mt-2"
+                         style="display:none;">
+                    </div>
+                </div>
+
+                <!-- Fee Estimate — updates when urgency changes -->
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold">
+                            💰 Transport Fee Estimate
+                        </h6>
+                        <table class="table table-sm mb-2">
+                            <tr>
+                                <td>Base rate (urgency)</td>
+                                <td class="text-end fw-bold"
+                                    id="base_rate_display">
+                                    Ksh —
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Distance multiplier
+                                    <br>
+                                    <small class="text-muted">
+                                        0-20km ×1.0 |
+                                        21-50km ×1.5 |
+                                        51-100km ×2.0 |
+                                        100km+ ×3.0
+                                    </small>
+                                </td>
+                                <td class="text-end">
+                                    Calculated by<br>Google Maps
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Minimum fee</td>
+                                <td class="text-end fw-bold"
+                                    id="min_fee_display">
+                                    Ksh —
+                                </td>
+                            </tr>
+                            <tr class="table-success">
+                                <td class="fw-bold">
+                                    Estimated fee range
+                                </td>
+                                <td class="text-end fw-bold
+                                           text-success"
+                                    id="fee_range_display">
+                                    Ksh —
+                                </td>
+                            </tr>
+                        </table>
+                        <small class="text-muted">
+                            ℹ️ Exact fee calculated by Google Maps
+                            real driving distance when you submit.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit"
+                            class="btn btn-success btn-lg">
+                        🚚 Submit Transport Request
+                    </button>
+                    <a href="{% url 'dashboard_buyer' %}"
+                       class="btn btn-outline-secondary btn-lg">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
         </div>
+    </div>
 
-        <div class="form-group">
-            <label for="product_type">Product Type</label>
-            <select name="product_type" id="product_type" required>
-                <option value="">Select product type</option>
-                <option value="perishable">Perishable</option>
-                <option value="non-perishable">Non-Perishable</option>
-                <option value="fragile">Fragile</option>
-                <option value="bulk">Bulk</option>
-            </select>
-        </div>
-
-        <!-- Add Urgency Selector -->
-        <div class="form-group">
-            <label for="urgency">Urgency</label>
-            <select name="urgency" id="urgency" required>
-                <option value="">Select urgency</option>
-                <option value="high">High</option>
-                <option value="medium" selected>Medium</option>
-                <option value="low">Low</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="pickup_date">Pickup Date</label>
-            <input type="date" name="pickup_date" id="pickup_date" required>
-        </div>
-
-        <div class="form-group">
-            <label for="pickup_time">Pickup Time</label>
-            <input type="time" name="pickup_time" id="pickup_time" required>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Request Transport</button>
-    </form>
 </div>
+
+<script>
+// -----------------------------------------------
+// Data passed from Django view
+// -----------------------------------------------
+const URGENCY_RATES = {{ urgency_rates|safe }};
+const MINIMUM_FEES = {{ minimum_fees|safe }};
+const RECOMMENDED_URGENCY = "{{ recommended_urgency }}";
+const PRODUCT_CATEGORY = "{{ product.category }}";
+
+// -----------------------------------------------
+// Warning messages per product category
+// Shown when buyer selects lower urgency
+// than recommended
+// -----------------------------------------------
+const WARNINGS = {
+    'dairy': (
+        '⚠️ Dairy products spoil within hours. ' +
+        'High urgency is strongly recommended.'
+    ),
+    'poultry': (
+        '⚠️ Poultry is highly perishable. ' +
+        'High urgency is strongly recommended.'
+    ),
+    'vegetables': (
+        '⚠️ Vegetables have a short shelf life. ' +
+        'Medium or High urgency is recommended.'
+    ),
+    'fruits': (
+        '⚠️ Fruits can spoil quickly. ' +
+        'Medium or High urgency is recommended.'
+    ),
+    'grains': null,
+    'other': null,
+};
+
+// Urgency priority — higher number = higher priority
+const PRIORITY = {'high': 3, 'medium': 2, 'low': 1};
+
+// -----------------------------------------------
+// Updates fee estimate and warning when
+// buyer changes urgency dropdown
+// -----------------------------------------------
+function handleUrgencyChange() {
+    const selected = document.getElementById('urgency').value;
+    const warningDiv = document.getElementById('urgency_warning');
+
+    // Get rates for selected urgency
+    const baseRate = parseFloat(URGENCY_RATES[selected] || 300);
+    const minFee = parseFloat(MINIMUM_FEES[selected] || 200);
+
+    // Fee range: minimum to maximum (base × 3.0)
+    const minEstimate = Math.max(baseRate, minFee);
+    const maxEstimate = Math.max(baseRate * 3, minFee);
+
+    // Update fee estimate display
+    document.getElementById('base_rate_display').textContent =
+        'Ksh ' + baseRate;
+    document.getElementById('min_fee_display').textContent =
+        'Ksh ' + minFee;
+    document.getElementById('fee_range_display').textContent =
+        'Ksh ' + minEstimate + ' – Ksh ' + maxEstimate;
+
+    // Check if selected urgency is lower than recommended
+    const recommendedPriority = PRIORITY[RECOMMENDED_URGENCY] || 2;
+    const selectedPriority = PRIORITY[selected] || 2;
+
+    if (selectedPriority < recommendedPriority) {
+        const warning = WARNINGS[PRODUCT_CATEGORY];
+        if (warning) {
+            warningDiv.textContent = warning;
+            warningDiv.style.display = 'block';
+        } else {
+            warningDiv.style.display = 'none';
+        }
+    } else {
+        // Selected urgency is equal or higher — no warning
+        warningDiv.style.display = 'none';
+    }
+}
+
+// -----------------------------------------------
+// Google Maps Places Autocomplete
+// Restricts suggestions to Kenya only
+// -----------------------------------------------
+function initAutocomplete() {
+    const options = {
+        componentRestrictions: { country: 'ke' },
+        fields: ['formatted_address', 'name', 'geometry'],
+        types: ['geocode', 'establishment'],
+    };
+
+    // Pickup field autocomplete
+    const pickupInput = document.getElementById('pickup_location');
+    const pickupAuto = new google.maps.places.Autocomplete(
+        pickupInput, options
+    );
+
+    // Delivery field autocomplete
+    const deliveryInput = document.getElementById('delivery_location');
+    const deliveryAuto = new google.maps.places.Autocomplete(
+        deliveryInput, options
+    );
+
+    // When user selects a suggestion use the
+    // formatted_address for accurate Google Maps
+    // distance calculation
+    pickupAuto.addListener('place_changed', function() {
+        const place = pickupAuto.getPlace();
+        if (place.formatted_address) {
+            pickupInput.value = place.formatted_address;
+        }
+    });
+
+    deliveryAuto.addListener('place_changed', function() {
+        const place = deliveryAuto.getPlace();
+        if (place.formatted_address) {
+            deliveryInput.value = place.formatted_address;
+        }
+    });
+}
+
+// Run on page load to set initial fee estimate
+handleUrgencyChange();
+</script>
+
+<!-- Google Maps Places API Script -->
+<!-- callback=initAutocomplete runs initAutocomplete()
+     automatically once the script loads -->
+<script
+    src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=places&callback=initAutocomplete"
+    async
+    defer>
+</script>
+
 {% endblock %}

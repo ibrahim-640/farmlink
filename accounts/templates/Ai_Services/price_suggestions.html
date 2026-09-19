@@ -1,10 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Price Suggestions{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>🤖 AI Price Suggestions</h2>
+    <p class="text-muted">Based on your sales history, here are recommended prices for your products.</p>
 
-</body>
-</html>
+    {% if suggestions %}
+        <div class="row">
+            {% for s in suggestions %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ s.product.name }}</h5>
+                        <p class="mb-1">
+                            <strong>Current Price:</strong>
+                            KSh {{ s.current_price }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Recommended Price:</strong>
+                            <span class="text-success fw-bold">
+                                KSh {{ s.recommended_price }}
+                            </span>
+                        </p>
+                        <p class="mb-1">
+                            <strong>Confidence:</strong>
+                            {% if s.confidence == 'High' %}
+                                <span class="badge bg-success">High</span>
+                            {% elif s.confidence == 'Medium' %}
+                                <span class="badge bg-warning text-dark">Medium</span>
+                            {% else %}
+                                <span class="badge bg-danger">Low</span>
+                            {% endif %}
+                        </p>
+                        <p class="text-muted mt-2">{{ s.message }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You have no products yet. Add products to get price suggestions.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

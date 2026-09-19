@@ -1,10 +1,285 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.id }}{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <a href="{% url 'order_list' %}"
+           class="btn btn-outline-secondary me-3">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h2 class="mb-0 fw-bold">Order #{{ order.id }}</h2>
+            <p class="text-muted mb-0">
+                Placed on {{ order.order_date|date:"F d, Y H:i" }}
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <!-- Left Column -->
+        <div class="col-md-8">
+
+            <!-- Product Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-box me-2"></i> Product Details
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-3">
+                        {% if order.product.image %}
+                            <img src="{{ order.product.image.url }}"
+                                 class="rounded"
+                                 style="width:100px;height:100px;object-fit:cover;"
+                                 alt="{{ order.product.name }}">
+                        {% endif %}
+                        <div>
+                            <h5 class="fw-bold">{{ order.product.name }}</h5>
+                            <p class="text-muted mb-1">
+                                Category: {{ order.product.category }}
+                            </p>
+                            <p class="mb-1">
+                                Quantity:
+                                <strong>
+                                    {{ order.quantity }}
+                                    {{ order.product.unit }}
+                                </strong>
+                            </p>
+                            <p class="mb-1">
+                                Price per unit:
+                                <strong>
+                                    KSh {{ order.product.price_per_unit }}
+                                </strong>
+                            </p>
+                            <p class="mb-0">
+                                Total:
+                                <strong class="text-success">
+                                    KSh {{ order.total_price }}
+                                </strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Timeline -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-timeline me-2"></i> Order Timeline
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+
+                        <!-- Step 1 — Order Placed -->
+                        <li class="d-flex gap-3 mb-3">
+                            <div class="text-success">
+                                <i class="fas fa-check-circle fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="fw-bold mb-0">Order Placed</p>
+                                <small class="text-muted">
+                                    {{ order.order_date|date:"M d, Y H:i" }}
+                                </small>
+                            </div>
+                        </li>
+
+                        <!-- Step 2 — Payment -->
+                        <li class="d-flex gap-3 mb-3">
+                            <div class="{% if payment and payment.status == 'completed' %}text-success{% else %}text-muted{% endif %}">
+                                <i class="fas fa-{% if payment and payment.status == 'completed' %}check{% else %}clock{% endif %}-circle fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="fw-bold mb-0">Payment</p>
+                                <small class="text-muted">
+                                    {% if payment %}
+                                        {{ payment.status|title }} —
+                                        KSh {{ payment.amount }}
+                                        via {{ payment.method|upper }}
+                                        {% if payment.transaction_id %}
+                                            ({{ payment.transaction_id }})
+                                        {% endif %}
+                                    {% else %}
+                                        Awaiting payment
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </li>
+
+                        <!-- Step 3 — Confirmed -->
+                        <li class="d-flex gap-3 mb-3">
+                            <div class="{% if order.status in 'confirmed,in_transit,delivered' %}text-success{% else %}text-muted{% endif %}">
+                                <i class="fas fa-thumbs-up fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="fw-bold mb-0">Order Confirmed</p>
+                                <small class="text-muted">
+                                    {% if order.status in 'confirmed,in_transit,delivered' %}
+                                        Order confirmed by system
+                                    {% else %}
+                                        Waiting for confirmation
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </li>
+
+                        <!-- Step 4 — In Transit -->
+                        <li class="d-flex gap-3 mb-3">
+                            <div class="{% if order.status in 'in_transit,delivered' %}text-success{% else %}text-muted{% endif %}">
+                                <i class="fas fa-truck fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="fw-bold mb-0">In Transit</p>
+                                <small class="text-muted">
+                                    {% if transport_job %}
+                                        {% if transport_job.driver %}
+                                            Driver: {{ transport_job.driver.username }}
+                                        {% else %}
+                                            Awaiting driver assignment
+                                        {% endif %}
+                                    {% else %}
+                                        Transport not yet assigned
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </li>
+
+                        <!-- Step 5 — Delivered -->
+                        <li class="d-flex gap-3 mb-3">
+                            <div class="{% if order.status == 'delivered' %}text-success{% else %}text-muted{% endif %}">
+                                <i class="fas fa-home fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="fw-bold mb-0">Delivered</p>
+                                <small class="text-muted">
+                                    {% if order.status == 'delivered' %}
+                                        {% if order.delivery_date %}
+                                            {{ order.delivery_date|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            Delivered
+                                        {% endif %}
+                                    {% else %}
+                                        Pending delivery
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-4">
+
+            <!-- Order Status Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-info-circle me-2"></i> Order Status
+                </div>
+                <div class="card-body text-center py-4">
+                    {% if order.status == 'delivered' %}
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="text-success fw-bold">Delivered</h5>
+                    {% elif order.status == 'in_transit' %}
+                        <i class="fas fa-truck fa-3x text-primary mb-3"></i>
+                        <h5 class="text-primary fw-bold">In Transit</h5>
+                    {% elif order.status == 'confirmed' %}
+                        <i class="fas fa-thumbs-up fa-3x text-info mb-3"></i>
+                        <h5 class="text-info fw-bold">Confirmed</h5>
+                    {% elif order.status == 'cancelled' %}
+                        <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                        <h5 class="text-danger fw-bold">Cancelled</h5>
+                    {% else %}
+                        <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                        <h5 class="text-warning fw-bold">Pending</h5>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Farmer/Buyer Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white fw-bold">
+                    {% if is_buyer %}
+                        <i class="fas fa-tractor me-2"></i> Farmer Details
+                    {% else %}
+                        <i class="fas fa-user me-2"></i> Buyer Details
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if is_buyer %}
+                        <p class="mb-1">
+                            <strong>Name:</strong>
+                            {{ order.product.farmer.username }}
+                        </p>
+                        <p class="mb-0">
+                            <strong>Email:</strong>
+                            {{ order.product.farmer.email }}
+                        </p>
+                    {% else %}
+                        <p class="mb-1">
+                            <strong>Name:</strong>
+                            {{ order.buyer.username }}
+                        </p>
+                        <p class="mb-0">
+                            <strong>Email:</strong>
+                            {{ order.buyer.email }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Transport Details -->
+            {% if transport_job %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-truck me-2"></i> Transport Details
+                </div>
+                <div class="card-body">
+                    <p class="mb-1">
+                        <strong>Status:</strong>
+                        {{ transport_job.status }}
+                    </p>
+                    <p class="mb-1">
+                        <strong>Pickup:</strong>
+                        {{ transport_job.pickup_location|default:"Not set" }}
+                    </p>
+                    <p class="mb-1">
+                        <strong>Destination:</strong>
+                        {{ transport_job.delivery_location|default:"Not set" }}
+                    </p>
+                    {% if transport_job.driver %}
+                        <p class="mb-0">
+                            <strong>Driver:</strong>
+                            {{ transport_job.driver.username }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Rate Transporter Button -->
+            {% if is_buyer and transport_job and order.status == 'delivered' %}
+                {% if not transport_job.rating %}
+                    <a href="{% url 'rate_transporter' transport_job.id %}"
+                       class="btn btn-success w-100">
+                        <i class="fas fa-star me-2"></i>
+                        Rate Transporter
+                    </a>
+                {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check me-2"></i>
+                        You rated this delivery
+                        {{ transport_job.rating.rating }}⭐
+                    </div>
+                {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

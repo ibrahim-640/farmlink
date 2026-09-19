@@ -1,10 +1,240 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center mb-4">
+        <i class="fas fa-user-circle fa-2x text-success me-3"></i>
+        <div>
+            <h2 class="mb-0 fw-bold">My Profile</h2>
+            <p class="text-muted mb-0">Manage your account details</p>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <!-- Profile Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm text-center">
+                <div class="card-body py-4">
+
+                    <!-- Profile Picture -->
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}"
+                             alt="Profile Picture"
+                             class="rounded-circle mb-3"
+                             style="width:120px; height:120px; object-fit:cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center
+                                    justify-content-center mx-auto mb-3"
+                             style="width:120px; height:120px; font-size:48px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+
+                    <!-- Name and Role -->
+                    <h4 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                    <span class="badge bg-success mb-2" style="font-size:0.9rem;">
+                        {% if profile.is_farmer %}
+                            <i class="fas fa-tractor me-1"></i> Farmer
+                        {% elif profile.is_buyer %}
+                            <i class="fas fa-shopping-cart me-1"></i> Buyer
+                        {% elif profile.is_transporter %}
+                            <i class="fas fa-truck me-1"></i> Transporter
+                        {% endif %}
+                    </span>
+
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-envelope me-1"></i>
+                        {{ user.email|default:"No email set" }}
+                    </p>
+
+                    <!-- Transporter Rating -->
+                    {% if profile.is_transporter %}
+                        <div class="mt-3">
+                            <p class="mb-1 fw-bold">Rating</p>
+                            <div class="d-flex justify-content-center align-items-center gap-1">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= profile.rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ms-2 text-muted">
+                                    ({{ profile.rating_count }} reviews)
+                                </span>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-id-card me-2"></i> Account Details
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold text-muted" style="width:35%;">
+                                    <i class="fas fa-user me-2"></i> Username
+                                </td>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">
+                                    <i class="fas fa-envelope me-2"></i> Email
+                                </td>
+                                <td>{{ user.email|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">
+                                    <i class="fas fa-phone me-2"></i> Phone
+                                </td>
+                                <td>{{ profile.phone|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">
+                                    <i class="fas fa-map-marker-alt me-2"></i> Location
+                                </td>
+                                <td>{{ profile.location|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">
+                                    <i class="fas fa-calendar me-2"></i> Member Since
+                                </td>
+                                <td>{{ user.date_joined|date:"F d, Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">
+                                    <i class="fas fa-clock me-2"></i> Last Login
+                                </td>
+                                <td>{{ user.last_login|date:"F d, Y H:i"|default:"N/A" }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Role Specific Info -->
+            {% if profile.is_farmer %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-tractor me-2"></i> Farmer Summary
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="fw-bold text-success">
+                                {{ user.products.count }}
+                            </h4>
+                            <p class="text-muted mb-0">Products Listed</p>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="fw-bold text-success">
+                                {{ user.products.filter.count|default:"0" }}
+                            </h4>
+                            <p class="text-muted mb-0">Active Products</p>
+                        </div>
+                        <div class="col-4">
+                            <a href="{% url 'price_suggestions' %}"
+                               class="btn btn-outline-success btn-sm mt-2">
+                                <i class="fas fa-robot me-1"></i>
+                                AI Suggestions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if profile.is_buyer %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-shopping-cart me-2"></i> Buyer Summary
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="fw-bold text-success">
+                                {{ user.order_set.count|default:"0" }}
+                            </h4>
+                            <p class="text-muted mb-0">Total Orders</p>
+                        </div>
+                        <div class="col-4">
+                            <a href="{% url 'product_recommendations' %}"
+                               class="btn btn-outline-success btn-sm mt-2">
+                                <i class="fas fa-robot me-1"></i>
+                                AI Picks
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{% url 'market_trends' %}"
+                               class="btn btn-outline-primary btn-sm mt-2">
+                                <i class="fas fa-chart-line me-1"></i>
+                                Market Trends
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if profile.is_transporter %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-truck me-2"></i> Transporter Summary
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="fw-bold text-success">
+                                {{ user.transport_jobs.count|default:"0" }}
+                            </h4>
+                            <p class="text-muted mb-0">Total Jobs</p>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="fw-bold text-success">
+                                {{ profile.rating }}⭐
+                            </h4>
+                            <p class="text-muted mb-0">Rating</p>
+                        </div>
+                        <div class="col-4">
+                            <a href="{% url 'transport_myjobs' %}"
+                               class="btn btn-outline-success btn-sm mt-2">
+                                <i class="fas fa-list me-1"></i>
+                                My Jobs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex gap-2 mt-2 mb-5">
+        <a href="javascript:history.back()"
+           class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Go Back
+        </a>
+        <a href="{% url 'notifications' %}"
+           class="btn btn-outline-success">
+            <i class="fas fa-bell me-2"></i> View Notifications
+        </a>
+    </div>
+
+</div>
+{% endblock %}

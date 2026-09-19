@@ -32,6 +32,12 @@
                     {% endif %}
 
                     <a class="nav-link custom-nav-link" href="{% url 'product_list' %}">Marketplace</a>
+                    <a class="nav-link custom-nav-link" href="{% url 'profile_view' %}">
+                        <i class="fas fa-user me-1"></i> Profile
+                    </a>
+                    <a class="nav-link custom-nav-link" href="{% url 'notifications' %}">
+                        <i class="fas fa-bell me-1"></i> Notifications
+                    </a>
                     <a class="nav-link custom-nav-link logout-link" href="{% url 'logout_view' %}">Logout</a>
 
                 {% else %}
@@ -58,9 +64,77 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white mt-4 p-4 text-center">
-        <p>&copy Reach out at:254795792759</p>
-    </footer>
+    <!-- ======= FOOTER ======= -->
+<footer class="bg-dark text-white mt-4 pt-5 pb-3">
+  <div class="container">
+    <div class="row">
+
+      <!-- About Us -->
+      <div class="col-md-3 mb-4">
+        <h5>About FarmLink</h5>
+        <p>
+          FarmLink connects buyers with fresh farm products directly from trusted farmers.
+          Fast, secure, and reliable delivery every time.
+        </p>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-md-3 mb-4">
+        <h5>Quick Links</h5>
+        <ul class="list-unstyled">
+          <li><a href="/" class="text-white text-decoration-none">Home</a></li>
+          <li><a href="/products/" class="text-white text-decoration-none">Products</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="col-md-3 mb-4">
+        <h5>Contact Us</h5>
+        <p>📞 +254 795 792 759</p>
+        <p>✉ info@farmlink.co.ke</p>
+        <p>📍 Nairobi, Kenya</p>
+      </div>
+
+      <!-- Social Media -->
+      <div class="col-md-3 mb-4">
+        <h5>Follow Me</h5>
+        <a href="https://x.com/Mwi60738Mwita" class="text-white me-2 social-icon">
+          <i class="fab fa-twitter fa-lg"></i>
+        </a>
+        <a href="https://www.instagram.com/ibrahim_mutisia?igsh=MXNrNnZ5dG5pYjIxcA==" class="text-white me-2 social-icon">
+          <i class="fab fa-instagram fa-lg"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/ibrahim-mutisia-75a948357?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" class="text-white social-icon">
+          <i class="fab fa-linkedin fa-lg"></i>
+        </a>
+      </div>
+
+    </div>
+
+    <hr class="bg-light">
+
+    <!-- Copyright -->
+    <div class="text-center">
+      <p class="mb-0">&copy; 2026 FarmLink. All rights reserved.</p>
+    </div>
+  </div>
+</footer> <!-- This is the closing tag for the footer -->
+
+<!-- ======= STYLES ======= -->
+<style>
+  .social-icon:hover {
+    color: #FFD700; /* gold on hover */
+    transition: color 0.3s;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<!-- ======= FONT AWESOME ======= -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>

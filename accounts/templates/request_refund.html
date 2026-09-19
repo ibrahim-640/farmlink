@@ -1,10 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-warning text-dark fw-bold">
+            💰 Request Refund
+        </div>
+        <div class="card-body">
+            <h5>Order #{{ order.id }}</h5>
+            <p>
+                <strong>Product:</strong>
+                {{ order.product.name }}
+            </p>
+            <p>
+                <strong>Amount to refund:</strong>
+                Ksh {{ order.total_price }}
+            </p>
+            <p>
+                <strong>Waiting since:</strong>
+                {{ order.order_date|date:"M d, Y" }}
+                ({{ days_waiting }} days)
+            </p>
+
+            <div class="alert alert-warning mt-3">
+                The farmer has not confirmed your order
+                for <strong>{{ days_waiting }} days</strong>.
+                Requesting a refund will:
+                <ul class="mt-2">
+                    <li>Cancel this order</li>
+                    <li>
+                        Notify FarmLink admin to
+                        process your M-Pesa refund
+                        within 24 hours
+                    </li>
+                    <li>Notify the farmer</li>
+                </ul>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-warning me-2">
+                    💰 Request Refund
+                </button>
+                <a href="{% url 'dashboard_buyer' %}"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

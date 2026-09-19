@@ -4,7 +4,7 @@
 
 <!-- DASHBOARD HERO BANNER -->
 <div class="dashboard-hero">
-    <h2>Welcome to Your Dashboard, {{ user.username }}!</h2>
+    <h2>Welcome to Your Dashboard, {{ user.username }}! 🌾</h2>
     <p>Manage your products, track orders, and grow your farm business.</p>
 </div>
 
@@ -13,28 +13,92 @@
     <!-- STATS -->
     <div class="stats-grid">
         <div class="stat-card">
-            <h3>Total Revenue</h3>
-            <p class="stat-value">Ksh {{ total_revenue }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>Total Orders</h3>
-            <p class="stat-value">{{ total_orders }}</p>
-        </div>
-        <div class="stat-card">
             <h3>Products Listed</h3>
             <p class="stat-value">{{ total_products }}</p>
         </div>
+    </div>
+        <!-- FARMER EARNINGS WALLET -->
+    <div class="section-block">
+        <h3 class="section-title">💰 My Earnings</h3>
+        <div class="stats-grid">
+            <div class="stat-card bg-green-100">
+                <h3>Total Earned</h3>
+                <p class="stat-value">
+                    Ksh {{ wallet.total_earned }}
+                </p>
+            </div>
+            <div class="stat-card bg-blue-100">
+                <h3>Pending Payout</h3>
+                <p class="stat-value">
+                    Ksh {{ wallet.pending_payout }}
+                </p>
+                <small class="text-muted">
+                    Will be sent to your M-Pesa
+                </small>
+            </div>
+            <div class="stat-card bg-yellow-100">
+                <h3>Paid Out</h3>
+                <p class="stat-value">
+                    Ksh {{ wallet.total_paid_out }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Recent earnings -->
+        {% if recent_earnings %}
+            <table class="orders-table mt-3">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for earning in recent_earnings %}
+                        <tr>
+                            <td>#{{ earning.order.id }}</td>
+                            <td class="text-success fw-bold">
+                                Ksh {{ earning.amount }}
+                            </td>
+                            <td>{{ earning.get_earning_type_display }}</td>
+                            <td>
+                                {% if earning.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">
+                                        Pending
+                                    </span>
+                                {% elif earning.status == 'paid' %}
+                                    <span class="badge bg-success">
+                                        Paid
+                                    </span>
+                                {% elif earning.status == 'withheld' %}
+                                    <span class="badge bg-danger">
+                                        Withheld
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ earning.created_at|date:"M d, Y" }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
     </div>
 
     <!-- OUT OF STOCK ALERTS -->
     {% if out_of_stock %}
     <div class="section-block">
-        <h3 class="section-title">Out of Stock</h3>
+        <h3 class="section-title">🚫 Out of Stock</h3>
         <ul class="alert-list">
             {% for product in out_of_stock %}
                 <li class="alert-item">
-                    🚫 <strong>{{ product.name }}</strong> — Out of stock!
-                    <a href="{% url 'edit_product' product.id %}" class="btn btn-sm">
+                    <strong>{{ product.name }}</strong> — Out of stock!
+                    <a href="{% url 'edit_product' product.id %}"
+                       class="btn btn-sm btn-danger ms-2">
                         Update Stock
                     </a>
                 </li>
@@ -45,14 +109,15 @@
 
     <!-- LOW STOCK ALERTS -->
     <div class="section-block">
-        <h3 class="section-title">Low Stock Alerts</h3>
+        <h3 class="section-title">⚠️ Low Stock Alerts</h3>
         {% if low_stock %}
             <ul class="alert-list">
                 {% for product in low_stock %}
                     <li class="alert-item">
                         ⚠️ <strong>{{ product.name }}</strong>
-                        — Only {{ product.quantity }} left!
-                        <a href="{% url 'edit_product' product.id %}" class="btn btn-sm">
+                        — Only {{ product.quantity }} {{ product.unit }} left!
+                        <a href="{% url 'edit_product' product.id %}"
+                           class="btn btn-sm btn-warning ms-2">
                             Update Stock
                         </a>
                     </li>
@@ -84,78 +149,206 @@
                                 <span style="color:red;">Out of stock</span>
                             {% elif product.quantity <= 5 %}
                                 <span style="color:orange;">
-                                    {{ product.quantity }} ⚠️
+                                    {{ product.quantity }}
+                                    {{ product.unit }} ⚠️
                                 </span>
                             {% else %}
-                                {{ product.quantity }}
+                                {{ product.quantity }} {{ product.unit }}
                             {% endif %}
                         </td>
                         <td>{{ product.price_per_unit }}</td>
                         <td>
                             <a href="{% url 'edit_product' product.id %}"
-                               class="btn btn-sm">Edit</a>
-
+                               class="btn btn-sm btn-outline-success">
+                                Edit
+                            </a>
                             <a href="{% url 'delete_product' product.id %}"
-                               class="btn btn-sm btn-danger">Delete</a>
+                               class="btn btn-sm btn-outline-danger ms-1">
+                                Delete
+                            </a>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="4" class="empty-row">No products found.</td>
+                        <td colspan="4" class="empty-row">
+                            No products found.
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <a class="btn add-btn" href="{% url 'add_product' %}">+ Add New Product</a>
-        <a href="{% url 'my_products' %}" class="btn view-all-btn"
-           style="margin-bottom:15px; display:inline-block;">
+        <a href="{% url 'add_product' %}"
+           class="btn btn-success mt-3">
+            + Add New Product
+        </a>
+        <a href="{% url 'my_products' %}"
+           class="btn btn-outline-success mt-3 ms-2">
             View My Products
         </a>
     </div>
 
-    <!-- RECENT ORDERS TABLE -->
+    <!-- PENDING ORDERS — farmer must confirm -->
     <div class="section-block">
-        <h3 class="section-title">Recent Orders</h3>
+        <h3 class="section-title">
+            🕐 Pending Orders
+            {% if pending_orders %}
+                <span class="badge bg-danger ms-2">
+                    {{ pending_orders.count }}
+                </span>
+            {% endif %}
+        </h3>
+        <p class="text-muted">
+            These orders need your confirmation before
+            transport can be arranged.
+        </p>
         <table class="orders-table">
             <thead>
                 <tr>
+                    <th>Order #</th>
                     <th>Product</th>
                     <th>Buyer</th>
                     <th>Quantity</th>
-                    <th>Status</th>
                     <th>Total (Ksh)</th>
+                    <th>Date</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                {% for order in recent_orders %}
+                {% for order in pending_orders %}
                     <tr>
+                        <td>#{{ order.id }}</td>
                         <td>{{ order.product.name }}</td>
                         <td>{{ order.buyer.username }}</td>
-                        <td>{{ order.quantity }}</td>
                         <td>
-                            {% if order.status == 'pending' %}
-                                <span style="color:orange;">Pending</span>
-                            {% elif order.status == 'confirmed' %}
-                                <span style="color:blue;">Confirmed</span>
-                            {% elif order.status == 'in_transit' %}
-                                <span style="color:purple;">In Transit</span>
-                            {% elif order.status == 'delivered' %}
-                                <span style="color:green;">Delivered</span>
-                            {% else %}
-                                {{ order.status }}
-                            {% endif %}
+                            {{ order.quantity }}
+                            {{ order.product.unit }}
                         </td>
                         <td>{{ order.total_price }}</td>
+                        <td>{{ order.order_date|date:"M d, Y" }}</td>
+                        <td>
+                            <form method="POST"
+                                  action="{% url 'confirm_order_farmer' order.id %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-sm btn-success">
+                                    ✅ Confirm
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="empty-row">No recent orders.</td>
+                        <td colspan="7" class="empty-row">
+                            No pending orders.
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <a href="{% url 'farmer_orders' %}" class="btn">View All Orders</a>
+    </div>
+
+    <!-- CONFIRMED ORDERS — awaiting transport request -->
+    <div class="section-block">
+        <h3 class="section-title">✅ Confirmed Orders</h3>
+        <p class="text-muted">
+            You confirmed these orders.
+            Waiting for buyer to request transport.
+        </p>
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Product</th>
+                    <th>Buyer</th>
+                    <th>Quantity</th>
+                    <th>Total (Ksh)</th>
+                    <th>Date</th>
+                    <th>Transport</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in confirmed_orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.product.name }}</td>
+                        <td>{{ order.buyer.username }}</td>
+                        <td>
+                            {{ order.quantity }}
+                            {{ order.product.unit }}
+                        </td>
+                        <td>{{ order.total_price }}</td>
+                        <td>{{ order.order_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if order.transport_job %}
+                                <span class="badge bg-info text-dark">
+                                    Transport Requested
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    Awaiting Buyer
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="empty-row">
+                            No confirmed orders yet.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- IN TRANSIT ORDERS -->
+    <div class="section-block">
+        <h3 class="section-title">🚚 In Transit Orders</h3>
+        <p class="text-muted">
+            These orders are on their way to buyers.
+        </p>
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Product</th>
+                    <th>Buyer</th>
+                    <th>Quantity</th>
+                    <th>Total (Ksh)</th>
+                    <th>Transporter</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in in_transit_orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.product.name }}</td>
+                        <td>{{ order.buyer.username }}</td>
+                        <td>
+                            {{ order.quantity }}
+                            {{ order.product.unit }}
+                        </td>
+                        <td>{{ order.total_price }}</td>
+                        <td>
+                            {{ order.transporter.username|default:"Assigning..." }}
+                        </td>
+                        <td>{{ order.order_date|date:"M d, Y" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="empty-row">
+                            No orders in transit.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="{% url 'farmer_orders' %}" class="btn btn-outline-success mt-3">
+            View All Orders
+        </a>
     </div>
 
 </section>

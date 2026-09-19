@@ -56,9 +56,13 @@
                 required>
         </div>
 
-        <!-- NO AMOUNT INPUT (SECURITY) -->
-        <button type="submit" class="btn btn-success w-100">
-            Confirm & Pay with M-Pesa
+        <button type="submit"
+                class="btn btn-success btn-lg w-100"
+                id="pay_button"
+                onclick="this.disabled=true;
+                         this.textContent='⏳ Sending prompt...';
+                         this.form.submit();">
+            💳 Pay with M-Pesa
         </button>
     </form>
 

@@ -1,42 +1,160 @@
 {% extends 'base.html' %}
+{% block title %}My Orders{% endblock %}
 
 {% block content %}
-<h1>My Orders</h1>
+<div class="container mt-4">
 
-{% if orders %}
-<table class="table">
-    <thead>
-        <tr>
-            <th>Order ID</th>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Status</th>
-            <th>Transport</th>
-        </tr>
-    </thead>
+    <div class="d-flex align-items-center mb-4">
+        <i class="fas fa-shopping-bag fa-2x text-success me-3"></i>
+        <div>
+            <h2 class="mb-0 fw-bold">My Orders</h2>
+            <p class="text-muted mb-0">
+                {{ total_orders }} total orders —
+                KSh {{ total_spent }} spent
+            </p>
+        </div>
+    </div>
 
-    <tbody>
-        {% for order in orders %}
-        <tr>
-            <td>#{{ order.id }}</td>
-            <td>{{ order.product.name }}</td>
-            <td>{{ order.quantity }}</td>
-            <td>{{ order.status }}</td>
+    <!-- Status Filter Tabs -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link {% if not request.GET.status %}active{% endif %}"
+               href="{% url 'order_list' %}">
+                All ({{ total_orders }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.GET.status == 'pending' %}active{% endif %}"
+               href="?status=pending">
+                Pending ({{ pending.count }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.GET.status == 'confirmed' %}active{% endif %}"
+               href="?status=confirmed">
+                Confirmed ({{ confirmed.count }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.GET.status == 'in_transit' %}active{% endif %}"
+               href="?status=in_transit">
+                In Transit ({{ in_transit.count }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.GET.status == 'delivered' %}active{% endif %}"
+               href="?status=delivered">
+                Delivered ({{ delivered.count }})
+            </a>
+        </li>
+    </ul>
 
-            <td>
-                {% if order.transportrequest %}
-                    <span class="badge bg-info">Requested</span>
-                {% else %}
-                    <a href="{% url 'request_transport' order.product.id order.id %}" class="btn btn-primary btn-sm">Request Transport</a>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    {% if orders %}
+        <div class="row">
+            {% for order in orders %}
+            <div class="col-12 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
 
-{% else %}
-<p>You have no orders yet.</p>
-{% endif %}
+                            <!-- Product Image -->
+                            <div class="col-md-1">
+                                {% if order.product.image %}
+                                    <img src="{{ order.product.image.url }}"
+                                         class="rounded"
+                                         style="width:60px;height:60px;object-fit:cover;"
+                                         alt="{{ order.product.name }}">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center
+                                                justify-content-center"
+                                         style="width:60px;height:60px;">
+                                        <i class="fas fa-box text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
 
+                            <!-- Order Info -->
+                            <div class="col-md-4">
+                                <h6 class="fw-bold mb-1">
+                                    {{ order.product.name }}
+                                </h6>
+                                <small class="text-muted">
+                                    Order #{{ order.id }} •
+                                    {{ order.order_date|date:"M d, Y" }}
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    Farmer: {{ order.product.farmer.username }}
+                                </small>
+                            </div>
+
+                            <!-- Quantity and Price -->
+                            <div class="col-md-3">
+                                <p class="mb-0">
+                                    <span class="text-muted">Qty:</span>
+                                    {{ order.quantity }} {{ order.product.unit }}
+                                </p>
+                                <p class="mb-0 fw-bold text-success">
+                                    KSh {{ order.total_price }}
+                                </p>
+                            </div>
+
+                            <!-- Status Badge -->
+                            <div class="col-md-2">
+                                {% if order.status == 'delivered' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>
+                                        Delivered
+                                    </span>
+                                {% elif order.status == 'in_transit' %}
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-truck me-1"></i>
+                                        In Transit
+                                    </span>
+                                {% elif order.status == 'confirmed' %}
+                                    <span class="badge bg-info text-dark">
+                                        <i class="fas fa-thumbs-up me-1"></i>
+                                        Confirmed
+                                    </span>
+                                {% elif order.status == 'cancelled' %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times me-1"></i>
+                                        Cancelled
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Pending
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- View Detail Button -->
+                            <div class="col-md-2 text-end">
+                                <a href="{% url 'order_detail' order.id %}"
+                                   class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-eye me-1"></i>
+                                    View
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            You have no orders yet.
+            <a href="{% url 'product_list' %}" class="alert-link">
+                Browse products
+            </a>
+            to place your first order.
+        </div>
+    {% endif %}
+
+</div>
 {% endblock %}

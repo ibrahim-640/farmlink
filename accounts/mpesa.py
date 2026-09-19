@@ -3,7 +3,6 @@ import base64
 from datetime import datetime
 from decouple import config
 from requests.auth import HTTPBasicAuth
-
 # Load credentials from .env
 MPESA_SHORTCODE = config("MPESA_SHORTCODE")
 MPESA_PASSKEY = config("MPESA_PASSKEY")
