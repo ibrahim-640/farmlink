@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Manage Vehicle</h2>
+
+<div class="card">
+    <p><strong>Plate Number:</strong> {{ vehicle.plate_number }}</p>
+    <p><strong>Type:</strong> {{ vehicle.vehicle_type }}</p>
+    <p><strong>Capacity:</strong> {{ vehicle.capacity }} kg</p>
+    <p><strong>Status:</strong>
+        {% if vehicle.is_active %}
+            Active
+        {% else %}
+            Inactive
+        {% endif %}
+    </p>
+</div>
+
+<a href="{% url 'dashboard_transporter' %}" class="btn btn-outline-secondary">
+    Back to Dashboard
+</a>
+
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="transport-dashboard">
+    <h2>My Transport Jobs 🚚</h2>
+
+    {% if transport_jobs %}
+        <div class="jobs-list">
+            {% for job in transport_jobs %}
+    <div class="job-card">
+        <h3>Order #{{ job.order.id }} - {{ job.order.product.name }}</h3>
+        <p><strong>Driver:</strong>
+    {% if job.driver %}
+        {{ job.driver.username }}
+    {% else %}
+        Not assigned yet
+    {% endif %}
+    </p>
+
+        <!-- ✅ Status Progress -->
+        <div class="status-progress">
+            {% if job.status == "Pending" %}
+                <span>🟡 Pending</span>
+            {% elif job.status == "In Transit" %}
+                <span>🔵 In Transit</span>
+            {% elif job.status == "Delivered" %}
+                <span>🟢 Delivered</span>
+            {% elif job.status == "Cancelled" %}
+                <span>🔴 Cancelled</span>
+            {% endif %}
+        </div>
+
+        <p><strong>Pickup:</strong> {{ job.pickup_location }}</p>
+        <p><strong>Delivery:</strong> {{ job.delivery_location }}</p>
+        <p><strong>Transport Fee:</strong> Ksh {{ job.transport_fee|default:"N/A" }}</p>
+        <p><strong>Urgency:</strong> {{ job.urgency|title }}</p>
+        <p><strong>Created At:</strong> {{ job.created_at|date:"M d, Y H:i" }}</p>
+        <p><strong>Last Updated:</strong> {{ job.updated_at|date:"M d, Y H:i" }}</p>
+    </div>
+{% endfor %}
+
+        </div>
+    {% else %}
+        <p class="empty">No transport jobs available.</p>
+    {% endif %}
+</section>
+{% endblock %}

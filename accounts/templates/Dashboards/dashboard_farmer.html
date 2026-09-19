@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- DASHBOARD HERO BANNER -->
+<div class="dashboard-hero">
+    <h2>Welcome to Your Dashboard, {{ user.username }}!</h2>
+    <p>Manage your products, track orders, and grow your farm business.</p>
+</div>
+
+<section class="dashboard-container">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <p class="stat-value">Ksh {{ total_revenue }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Orders</h3>
+            <p class="stat-value">{{ total_orders }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Products Listed</h3>
+            <p class="stat-value">{{ total_products }}</p>
+        </div>
+    </div>
+
+    <!-- OUT OF STOCK ALERTS -->
+    {% if out_of_stock %}
+    <div class="section-block">
+        <h3 class="section-title">Out of Stock</h3>
+        <ul class="alert-list">
+            {% for product in out_of_stock %}
+                <li class="alert-item">
+                    🚫 <strong>{{ product.name }}</strong> — Out of stock!
+                    <a href="{% url 'edit_product' product.id %}" class="btn btn-sm">
+                        Update Stock
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- LOW STOCK ALERTS -->
+    <div class="section-block">
+        <h3 class="section-title">Low Stock Alerts</h3>
+        {% if low_stock %}
+            <ul class="alert-list">
+                {% for product in low_stock %}
+                    <li class="alert-item">
+                        ⚠️ <strong>{{ product.name }}</strong>
+                        — Only {{ product.quantity }} left!
+                        <a href="{% url 'edit_product' product.id %}" class="btn btn-sm">
+                            Update Stock
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No low-stock items 🎉</p>
+        {% endif %}
+    </div>
+
+    <!-- INVENTORY TABLE -->
+    <div class="section-block">
+        <h3 class="section-title">My Inventory</h3>
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Stock</th>
+                    <th>Price (Ksh)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>
+                            {% if product.quantity == 0 %}
+                                <span style="color:red;">Out of stock</span>
+                            {% elif product.quantity <= 5 %}
+                                <span style="color:orange;">
+                                    {{ product.quantity }} ⚠️
+                                </span>
+                            {% else %}
+                                {{ product.quantity }}
+                            {% endif %}
+                        </td>
+                        <td>{{ product.price_per_unit }}</td>
+                        <td>
+                            <a href="{% url 'edit_product' product.id %}"
+                               class="btn btn-sm">Edit</a>
+
+                            <a href="{% url 'delete_product' product.id %}"
+                               class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="empty-row">No products found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a class="btn add-btn" href="{% url 'add_product' %}">+ Add New Product</a>
+        <a href="{% url 'my_products' %}" class="btn view-all-btn"
+           style="margin-bottom:15px; display:inline-block;">
+            View My Products
+        </a>
+    </div>
+
+    <!-- RECENT ORDERS TABLE -->
+    <div class="section-block">
+        <h3 class="section-title">Recent Orders</h3>
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Buyer</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Total (Ksh)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in recent_orders %}
+                    <tr>
+                        <td>{{ order.product.name }}</td>
+                        <td>{{ order.buyer.username }}</td>
+                        <td>{{ order.quantity }}</td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                                <span style="color:orange;">Pending</span>
+                            {% elif order.status == 'confirmed' %}
+                                <span style="color:blue;">Confirmed</span>
+                            {% elif order.status == 'in_transit' %}
+                                <span style="color:purple;">In Transit</span>
+                            {% elif order.status == 'delivered' %}
+                                <span style="color:green;">Delivered</span>
+                            {% else %}
+                                {{ order.status }}
+                            {% endif %}
+                        </td>
+                        <td>{{ order.total_price }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="empty-row">No recent orders.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'farmer_orders' %}" class="btn">View All Orders</a>
+    </div>
+
+</section>
+
+{% endblock %}

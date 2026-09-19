@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="inventory-dashboard">
+    <h2>My Inventory 📦</h2>
+    <p>Here are all the products you have added or purchased.</p>
+
+    {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    </div>
+                    <div class="product-info">
+                        <h3>{{ product.name }}</h3>
+                        <p>Category: {{ product.category.name }}</p>
+                        <p>Price: Ksh {{ product.price }}</p>
+                        <p>Stock: {{ product.stock }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty">You have no products in your inventory yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

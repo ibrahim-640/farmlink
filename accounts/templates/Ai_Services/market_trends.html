@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="market-trends-dashboard">
+    <h2>Market Trends 📊</h2>
+
+    <!-- Top Products -->
+    <div class="top-products mt-6">
+        <h3>Top Selling Products</h3>
+        {% if top_products %}
+            <ul class="products-list">
+                {% for product in top_products %}
+                    <li class="product-card">
+                        <p class="product-name">{{ product.name }}</p>
+                        <p class="product-sold">Sold: {{ product.total_sold|default:"0" }}</p>
+                        <p class="product-price">Price: Ksh {{ product.price_per_unit }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty">No trending products available.</p>
+        {% endif %}
+    </div>
+
+    <!-- Category Stats -->
+    <div class="category-stats mt-6">
+    <h3>Category Trends</h3>
+    {% if category_stats %}
+        <ul class="categories-list">
+            {% for cat in category_stats %}
+                <li>
+                    {{ cat.category }} - Total Sold: {{ cat.total_sold|default:"0" }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty">No category data available.</p>
+    {% endif %}
+    </div>
+
+
+</section>
+{% endblock %}
